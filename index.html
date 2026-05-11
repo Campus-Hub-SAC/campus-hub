@@ -1,0 +1,1351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sri Aurobindo College – BCA Department | Login</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Firebase Compat SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
+
+  <!-- Tailwind dark mode config -->
+  <script>
+    tailwind.config = { darkMode: 'class' };
+  </script>
+
+  <!-- ══════════════════════════════════════════════════════════
+       ALL CUSTOM STYLES
+  ══════════════════════════════════════════════════════════ -->
+  <style>
+
+    /* ─── Base & Fonts ─────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --pink:   #ec4899;
+      --indigo: #6366f1;
+      --violet: #8b5cf6;
+      --grad:   linear-gradient(135deg, #ec4899 0%, #8b5cf6 50%, #6366f1 100%);
+      --grad-h: linear-gradient(135deg, #db2777 0%, #7c3aed 50%, #4f46e5 100%);
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      background-color: #f9fafb;   /* gray-50 light */
+      color: #111827;
+      transition: background-color 0.4s ease, color 0.4s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem 1rem;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Dark mode body */
+    html.dark body {
+      background-color: #000000;
+      color: #f9fafb;
+    }
+
+    /* ─── Subtle page background pattern ──────────────── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse 60% 40% at 10% 20%, rgba(236,72,153,0.08) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 50% at 90% 80%, rgba(99,102,241,0.08) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 30% at 50% 50%, rgba(139,92,246,0.05) 0%, transparent 70%);
+      transition: opacity 0.4s ease;
+    }
+    html.dark body::before {
+      background:
+        radial-gradient(ellipse 60% 40% at 10% 20%, rgba(236,72,153,0.05) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 50% at 90% 80%, rgba(99,102,241,0.06) 0%, transparent 60%);
+    }
+
+    /* ─── Dark mode toggle ─────────────────────────────── */
+    #darkToggle {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 999;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      background: #ffffff;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.06);
+      transition: background 0.3s, box-shadow 0.3s, transform 0.2s;
+      outline: none;
+    }
+    #darkToggle:hover {
+      transform: scale(1.08);
+      box-shadow: 0 4px 18px rgba(0,0,0,0.16);
+    }
+    html.dark #darkToggle {
+      background: #1f2937;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06);
+    }
+
+    /* ─── Main layout wrapper ──────────────────────────── */
+    .page-wrap {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 440px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+    }
+
+    /* ─── College header (above card) ─────────────────── */
+    .college-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.55rem;
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+
+    /* SAC logo square */
+    .logo-badge {
+      width: 64px;
+      height: 64px;
+      border-radius: 16px;
+      background: var(--grad);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 800;
+      font-size: 1.4rem;
+      color: #fff;
+      letter-spacing: 1px;
+      box-shadow: 0 8px 24px rgba(139,92,246,0.35), 0 2px 8px rgba(236,72,153,0.2);
+      position: relative;
+      flex-shrink: 0;
+    }
+    /* tiny shine on badge */
+    .logo-badge::after {
+      content: '';
+      position: absolute;
+      top: 6px; left: 8px;
+      width: 40%; height: 30%;
+      background: rgba(255,255,255,0.25);
+      border-radius: 6px;
+      filter: blur(2px);
+    }
+
+    .college-name {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #111827;
+      line-height: 1.2;
+      letter-spacing: -0.01em;
+    }
+    html.dark .college-name { color: #f9fafb; }
+
+    .college-dept {
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      /* gradient text */
+      background: var(--grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ─── Auth Card ────────────────────────────────────── */
+    .auth-card {
+      width: 100%;
+      background: #ffffff;
+      border-radius: 24px;
+      box-shadow:
+        0 1px 3px rgba(0,0,0,0.06),
+        0 8px 24px rgba(0,0,0,0.08),
+        0 0 0 1px rgba(0,0,0,0.04);
+      transition: background 0.4s ease, box-shadow 0.4s ease;
+      overflow: hidden;
+    }
+    html.dark .auth-card {
+      background: #111827;
+      box-shadow:
+        0 1px 3px rgba(0,0,0,0.4),
+        0 8px 32px rgba(0,0,0,0.5),
+        0 0 0 1px rgba(255,255,255,0.05);
+    }
+
+    /* ─── Gradient top accent line on card ────────────── */
+    .card-accent {
+      height: 3px;
+      background: var(--grad);
+      width: 100%;
+    }
+
+    /* ─── Tab Bar ──────────────────────────────────────── */
+    .tab-wrap {
+      display: flex;
+      border-bottom: 1px solid #f3f4f6;
+      background: #fff;
+      transition: background 0.4s, border-color 0.4s;
+    }
+    html.dark .tab-wrap {
+      border-bottom-color: #1f2937;
+      background: #111827;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 14px 0 12px;
+      border: none;
+      background: transparent;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #9ca3af;
+      cursor: pointer;
+      position: relative;
+      transition: color 0.25s ease;
+      letter-spacing: 0.01em;
+      outline: none;
+    }
+    html.dark .tab-btn { color: #4b5563; }
+
+    .tab-btn.active {
+      color: #111827;
+    }
+    html.dark .tab-btn.active { color: #f9fafb; }
+
+    /* animated gradient underline */
+    .tab-btn::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 50%;
+      transform: translateX(-50%) scaleX(0);
+      width: 60%;
+      height: 2.5px;
+      border-radius: 99px;
+      background: var(--grad);
+      transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .tab-btn.active::after {
+      transform: translateX(-50%) scaleX(1);
+    }
+
+    /* ─── Form body ────────────────────────────────────── */
+    .form-body {
+      padding: 1.75rem 1.75rem 1.5rem;
+    }
+    @media (max-width: 400px) {
+      .form-body { padding: 1.4rem 1.2rem 1.2rem; }
+    }
+
+    /* ─── Form panel visibility ────────────────────────── */
+    .form-panel {
+      display: none;
+    }
+    .form-panel.active {
+      display: block;
+      animation: panelIn 0.32s ease;
+    }
+    @keyframes panelIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ─── Form greeting ────────────────────────────────── */
+    .form-greeting {
+      margin-bottom: 1.4rem;
+    }
+    .form-greeting h2 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: #111827;
+      letter-spacing: -0.02em;
+      line-height: 1.25;
+    }
+    html.dark .form-greeting h2 { color: #f9fafb; }
+
+    .form-greeting p {
+      margin-top: 4px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: #6b7280;
+      line-height: 1.5;
+    }
+    html.dark .form-greeting p { color: #6b7280; }
+
+    /* ─── Field group ──────────────────────────────────── */
+    .field {
+      margin-bottom: 0.9rem;
+    }
+
+    .field-label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #374151;
+      margin-bottom: 5px;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+    html.dark .field-label { color: #9ca3af; }
+
+    /* ─── Input wrapper ────────────────────────────────── */
+    .input-wrap {
+      position: relative;
+    }
+
+    /* left icon */
+    .input-icon {
+      position: absolute;
+      left: 13px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.95rem;
+      pointer-events: none;
+      transition: opacity 0.2s;
+      opacity: 0.55;
+    }
+    .input-wrap:focus-within .input-icon { opacity: 1; }
+
+    /* right toggle (for password) */
+    .pw-toggle {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 0.95rem;
+      padding: 4px;
+      opacity: 0.5;
+      border-radius: 6px;
+      transition: opacity 0.2s, background 0.2s;
+      outline: none;
+      color: inherit;
+    }
+    .pw-toggle:hover {
+      opacity: 1;
+      background: rgba(0,0,0,0.05);
+    }
+    html.dark .pw-toggle:hover { background: rgba(255,255,255,0.06); }
+
+    /* ─── Text input ───────────────────────────────────── */
+    .form-input {
+      width: 100%;
+      height: 46px;
+      padding: 0 14px 0 40px;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 12px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: #111827;
+      background: #f9fafb;
+      outline: none;
+      transition: border-color 0.25s, background 0.25s, box-shadow 0.25s;
+      -webkit-appearance: none;
+    }
+    .form-input::placeholder {
+      color: #9ca3af;
+      font-weight: 400;
+    }
+    .form-input:hover {
+      border-color: #d1d5db;
+    }
+    .form-input:focus {
+      border-color: #8b5cf6;
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(139,92,246,0.12);
+    }
+    /* dark */
+    html.dark .form-input {
+      background: #1f2937;
+      border-color: #374151;
+      color: #f9fafb;
+    }
+    html.dark .form-input::placeholder { color: #4b5563; }
+    html.dark .form-input:hover { border-color: #4b5563; }
+    html.dark .form-input:focus {
+      border-color: #8b5cf6;
+      background: #111827;
+      box-shadow: 0 0 0 3px rgba(139,92,246,0.18);
+    }
+
+    /* password input right padding */
+    .form-input.has-toggle { padding-right: 42px; }
+
+    /* ─── Select ───────────────────────────────────────── */
+    .form-select {
+      width: 100%;
+      height: 46px;
+      padding: 0 36px 0 40px;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 12px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: #111827;
+      background: #f9fafb;
+      outline: none;
+      cursor: pointer;
+      appearance: none;
+      transition: border-color 0.25s, background 0.25s, box-shadow 0.25s;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+    }
+    .form-select:focus {
+      border-color: #8b5cf6;
+      background-color: #fff;
+      box-shadow: 0 0 0 3px rgba(139,92,246,0.12);
+    }
+    html.dark .form-select {
+      background-color: #1f2937;
+      border-color: #374151;
+      color: #f9fafb;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+    }
+    html.dark .form-select:focus {
+      border-color: #8b5cf6;
+      background-color: #111827;
+      box-shadow: 0 0 0 3px rgba(139,92,246,0.18);
+    }
+    .form-select option { color: #111827; background: #fff; }
+    html.dark .form-select option { color: #f9fafb; background: #1f2937; }
+
+    /* ─── Gradient submit button ───────────────────────── */
+    .btn-submit {
+      width: 100%;
+      height: 48px;
+      border: none;
+      border-radius: 12px;
+      background: var(--grad);
+      color: #fff;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: box-shadow 0.25s, transform 0.15s;
+      box-shadow: 0 4px 16px rgba(139,92,246,0.35);
+      outline: none;
+    }
+    .btn-submit::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--grad-h);
+      opacity: 0;
+      transition: opacity 0.25s;
+    }
+    .btn-submit:hover::before { opacity: 1; }
+    .btn-submit:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(139,92,246,0.4);
+    }
+    .btn-submit:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 8px rgba(139,92,246,0.3);
+    }
+    .btn-submit:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .btn-submit span { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; gap: 8px; }
+
+    /* ─── Google button ────────────────────────────────── */
+    .btn-google {
+      width: 100%;
+      height: 46px;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 12px;
+      background: #fff;
+      color: #374151;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: background 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+      outline: none;
+    }
+    .btn-google:hover {
+      background: #f9fafb;
+      border-color: #d1d5db;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+      transform: translateY(-1px);
+    }
+    .btn-google:active { transform: translateY(0); }
+    html.dark .btn-google {
+      background: #1f2937;
+      border-color: #374151;
+      color: #e5e7eb;
+    }
+    html.dark .btn-google:hover {
+      background: #111827;
+      border-color: #4b5563;
+    }
+
+    /* Google 'G' icon (SVG inline via background) */
+    .google-icon {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+
+    /* ─── Divider ──────────────────────────────────────── */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 1rem 0;
+      color: #9ca3af;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+    }
+    html.dark .divider { color: #4b5563; }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #f3f4f6;
+    }
+    html.dark .divider::before, html.dark .divider::after { background: #1f2937; }
+
+    /* ─── Forgot password link ─────────────────────────── */
+    .forgot-link {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #8b5cf6;
+      text-decoration: none;
+      cursor: pointer;
+      transition: color 0.2s;
+      background: none;
+      border: none;
+      padding: 0;
+      outline: none;
+      font-family: 'Inter', sans-serif;
+    }
+    .forgot-link:hover { color: #ec4899; text-decoration: underline; }
+    html.dark .forgot-link { color: #a78bfa; }
+    html.dark .forgot-link:hover { color: #f472b6; }
+
+    /* ─── Switch tab link ──────────────────────────────── */
+    .switch-link {
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: #6b7280;
+      text-align: center;
+      margin-top: 1.1rem;
+    }
+    .switch-link a {
+      font-weight: 700;
+      background: var(--grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .switch-link a:hover { text-decoration: underline; }
+    html.dark .switch-link { color: #4b5563; }
+
+    /* ─── Error / success message ──────────────────────── */
+    .msg {
+      display: none;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      margin-bottom: 0.9rem;
+      line-height: 1.45;
+    }
+    .msg.show { display: flex; animation: panelIn 0.25s ease; }
+    .msg.error {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #b91c1c;
+    }
+    html.dark .msg.error {
+      background: rgba(185,28,28,0.1);
+      border-color: rgba(252,165,165,0.2);
+      color: #fca5a5;
+    }
+    .msg.success {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      color: #15803d;
+    }
+    html.dark .msg.success {
+      background: rgba(21,128,61,0.1);
+      border-color: rgba(134,239,172,0.2);
+      color: #4ade80;
+    }
+    .msg-icon { font-size: 0.95rem; flex-shrink: 0; margin-top: 1px; }
+
+    /* ─── Forgot/submit row ────────────────────────────── */
+    .row-space {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      margin-bottom: 1rem;
+      margin-top: -4px;
+    }
+
+    /* ─── Loading spinner ──────────────────────────────── */
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2.5px solid rgba(255,255,255,0.35);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.65s linear infinite;
+      flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ─── Card footer ──────────────────────────────────── */
+    .card-footer {
+      text-align: center;
+      padding: 0.9rem 1.75rem 1.25rem;
+      border-top: 1px solid #f3f4f6;
+      font-size: 0.72rem;
+      color: #9ca3af;
+      font-weight: 500;
+      line-height: 1.6;
+    }
+    html.dark .card-footer {
+      border-top-color: #1f2937;
+      color: #374151;
+    }
+    .card-footer strong { font-weight: 700; }
+
+    /* ─── Password strength ────────────────────────────── */
+    .strength-track {
+      margin-top: 6px;
+      height: 3px;
+      background: #e5e7eb;
+      border-radius: 99px;
+      overflow: hidden;
+      display: none;
+    }
+    html.dark .strength-track { background: #374151; }
+    .strength-fill {
+      height: 100%;
+      width: 0;
+      border-radius: 99px;
+      background: #e5e7eb;
+      transition: width 0.4s ease, background 0.4s ease;
+    }
+    .strength-text {
+      display: none;
+      font-size: 0.7rem;
+      font-weight: 700;
+      margin-top: 3px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    /* ─── Responsive tweaks ────────────────────────────── */
+    @media (max-width: 380px) {
+      .college-name { font-size: 1rem; }
+      .logo-badge { width: 54px; height: 54px; font-size: 1.15rem; border-radius: 13px; }
+    }
+
+  </style>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- ══════════════════════════════════════════════════════════
+       DARK MODE TOGGLE BUTTON
+  ══════════════════════════════════════════════════════════ -->
+  <button id="darkToggle" aria-label="Toggle dark mode" title="Toggle dark/light mode">
+    <!-- icon updated by JS -->
+    🌙
+  </button>
+
+  <!-- ══════════════════════════════════════════════════════════
+       PAGE WRAPPER
+  ══════════════════════════════════════════════════════════ -->
+  <div class="page-wrap">
+
+    <!-- ── College Header ─────────────────────────────── -->
+    <header class="college-header" role="banner">
+      <!-- Logo badge -->
+      <div class="logo-badge" aria-hidden="true">SAC</div>
+      <!-- College name -->
+      <div>
+        <p class="college-name">Sri Aurobindo College</p>
+        <p class="college-dept">BCA Department Portal</p>
+      </div>
+    </header>
+
+    <!-- ── Auth Card ───────────────────────────────────── -->
+    <main class="auth-card" role="main" aria-label="Authentication">
+
+      <!-- Gradient accent line at top of card -->
+      <div class="card-accent" aria-hidden="true"></div>
+
+      <!-- ── Tab bar ── -->
+      <div class="tab-wrap" role="tablist" aria-label="Login or Sign Up">
+        <button
+          class="tab-btn active"
+          id="tab-login"
+          role="tab"
+          aria-selected="true"
+          aria-controls="panel-login"
+          onclick="switchTab('login')"
+        >Sign In</button>
+        <button
+          class="tab-btn"
+          id="tab-signup"
+          role="tab"
+          aria-selected="false"
+          aria-controls="panel-signup"
+          onclick="switchTab('signup')"
+        >Create Account</button>
+      </div>
+
+      <!-- ════════════════════════════════════════════════
+           LOGIN PANEL
+      ════════════════════════════════════════════════ -->
+      <section class="form-body form-panel active" id="panel-login" role="tabpanel" aria-labelledby="tab-login">
+
+        <!-- Greeting -->
+        <div class="form-greeting">
+          <h2>Welcome back 👋</h2>
+          <p>Sign in to your BCA portal account</p>
+        </div>
+
+        <!-- Error message area -->
+        <div class="msg error" id="login-msg" role="alert" aria-live="polite">
+          <span class="msg-icon">⚠️</span>
+          <span id="login-msg-text"></span>
+        </div>
+
+        <form id="loginForm" novalidate autocomplete="on">
+
+          <!-- Email -->
+          <div class="field">
+            <label class="field-label" for="login-email">Email</label>
+            <div class="input-wrap">
+              <span class="input-icon" aria-hidden="true">✉️</span>
+              <input
+                class="form-input"
+                type="email"
+                id="login-email"
+                name="email"
+                placeholder="you@example.com"
+                autocomplete="email"
+                required
+              />
+            </div>
+          </div>
+
+          <!-- Password -->
+          <div class="field">
+            <label class="field-label" for="login-password">Password</label>
+            <div class="input-wrap">
+              <span class="input-icon" aria-hidden="true">🔒</span>
+              <input
+                class="form-input has-toggle"
+                type="password"
+                id="login-password"
+                name="password"
+                placeholder="Enter your password"
+                autocomplete="current-password"
+                required
+              />
+              <button
+                type="button"
+                class="pw-toggle"
+                onclick="togglePw('login-password', this)"
+                aria-label="Show or hide password"
+              >👁️</button>
+            </div>
+          </div>
+
+          <!-- Forgot password row -->
+          <div class="row-space">
+            <button type="button" class="forgot-link" onclick="handleForgot()">
+              Forgot password?
+            </button>
+          </div>
+
+          <!-- Submit -->
+          <button type="submit" class="btn-submit" id="login-submit-btn">
+            <span>Sign In</span>
+          </button>
+
+        </form>
+
+        <!-- Divider -->
+        <div class="divider">or</div>
+
+        <!-- Google sign-in -->
+        <button class="btn-google" type="button" onclick="googleAuth('login')" id="login-google-btn">
+          <!-- Google SVG icon -->
+          <svg class="google-icon" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+            <path fill="#EA4335" d="M24 9.5c3.15 0 5.64 1.08 7.55 2.84l5.6-5.6C33.8 3.6 29.3 1.5 24 1.5 14.9 1.5 7.3 7.1 4.3 15l6.5 5.05C12.3 14.1 17.7 9.5 24 9.5z"/>
+            <path fill="#4285F4" d="M46.5 24.5c0-1.6-.15-3.15-.4-4.65H24v9.3h12.7c-.55 2.9-2.2 5.35-4.65 7l7.2 5.6C43.3 37.5 46.5 31.5 46.5 24.5z"/>
+            <path fill="#FBBC05" d="M10.8 28.55A14.6 14.6 0 0 1 9.5 24c0-1.6.3-3.15.8-4.55L3.8 14.4A22.4 22.4 0 0 0 1.5 24c0 3.55.85 6.9 2.35 9.85l6.95-5.3z"/>
+            <path fill="#34A853" d="M24 46.5c5.3 0 9.75-1.75 13-4.75l-7.2-5.6c-1.85 1.25-4.2 2-5.8 2-6.3 0-11.65-4.6-13.2-10.6l-6.95 5.3C7.3 40.9 14.9 46.5 24 46.5z"/>
+          </svg>
+          Continue with Google
+        </button>
+
+        <!-- Switch to sign up -->
+        <p class="switch-link">
+          Don't have an account? <a onclick="switchTab('signup')">Sign up free</a>
+        </p>
+
+      </section>
+
+      <!-- ════════════════════════════════════════════════
+           SIGN UP PANEL
+      ════════════════════════════════════════════════ -->
+      <section class="form-body form-panel" id="panel-signup" role="tabpanel" aria-labelledby="tab-signup">
+
+        <!-- Greeting -->
+        <div class="form-greeting">
+          <h2>Create your account ✨</h2>
+          <p>Join the Sri Aurobindo BCA community</p>
+        </div>
+
+        <!-- Error message area -->
+        <div class="msg error" id="signup-msg" role="alert" aria-live="polite">
+          <span class="msg-icon">⚠️</span>
+          <span id="signup-msg-text"></span>
+        </div>
+
+        <form id="signupForm" novalidate autocomplete="off">
+
+          <!-- Full Name -->
+          <div class="field">
+            <label class="field-label" for="signup-name">Full Name</label>
+            <div class="input-wrap">
+              <span class="input-icon" aria-hidden="true">👤</span>
+              <input
+                class="form-input"
+                type="text"
+                id="signup-name"
+                name="name"
+                placeholder="Your full name"
+                autocomplete="name"
+                required
+              />
+            </div>
+          </div>
+
+          <!-- Email -->
+          <div class="field">
+            <label class="field-label" for="signup-email">Email</label>
+            <div class="input-wrap">
+              <span class="input-icon" aria-hidden="true">✉️</span>
+              <input
+                class="form-input"
+                type="email"
+                id="signup-email"
+                name="email"
+                placeholder="you@example.com"
+                autocomplete="email"
+                required
+              />
+            </div>
+          </div>
+
+          <!-- Password -->
+          <div class="field">
+            <label class="field-label" for="signup-password">Password</label>
+            <div class="input-wrap">
+              <span class="input-icon" aria-hidden="true">🔒</span>
+              <input
+                class="form-input has-toggle"
+                type="password"
+                id="signup-password"
+                name="password"
+                placeholder="Create a password (min. 6 chars)"
+                autocomplete="new-password"
+                oninput="handleStrength(this.value)"
+                required
+              />
+              <button
+                type="button"
+                class="pw-toggle"
+                onclick="togglePw('signup-password', this)"
+                aria-label="Show or hide password"
+              >👁️</button>
+            </div>
+            <!-- Strength indicator -->
+            <div class="strength-track" id="strength-track">
+              <div class="strength-fill" id="strength-fill"></div>
+            </div>
+            <p class="strength-text" id="strength-text"></p>
+          </div>
+
+          <!-- Confirm Password -->
+          <div class="field">
+            <label class="field-label" for="signup-confirm">Confirm Password</label>
+            <div class="input-wrap">
+              <span class="input-icon" aria-hidden="true">🔑</span>
+              <input
+                class="form-input has-toggle"
+                type="password"
+                id="signup-confirm"
+                name="confirm"
+                placeholder="Re-enter your password"
+                autocomplete="new-password"
+                required
+              />
+              <button
+                type="button"
+                class="pw-toggle"
+                onclick="togglePw('signup-confirm', this)"
+                aria-label="Show or hide confirm password"
+              >👁️</button>
+            </div>
+          </div>
+
+          <!-- Role -->
+          <div class="field">
+            <label class="field-label" for="signup-role">I am a...</label>
+            <div class="input-wrap">
+              <span class="input-icon" aria-hidden="true">🎓</span>
+              <select class="form-select" id="signup-role" name="role" required>
+                <option value="" disabled selected>Select your role</option>
+                <option value="Student">Student</option>
+                <option value="Lecturer">Lecturer</option>
+                <option value="Admin">Admin</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Submit -->
+          <button type="submit" class="btn-submit" id="signup-submit-btn" style="margin-top: 0.25rem;">
+            <span>Create Account</span>
+          </button>
+
+        </form>
+
+        <!-- Divider -->
+        <div class="divider">or</div>
+
+        <!-- Google sign-up -->
+        <button class="btn-google" type="button" onclick="googleAuth('signup')" id="signup-google-btn">
+          <svg class="google-icon" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+            <path fill="#EA4335" d="M24 9.5c3.15 0 5.64 1.08 7.55 2.84l5.6-5.6C33.8 3.6 29.3 1.5 24 1.5 14.9 1.5 7.3 7.1 4.3 15l6.5 5.05C12.3 14.1 17.7 9.5 24 9.5z"/>
+            <path fill="#4285F4" d="M46.5 24.5c0-1.6-.15-3.15-.4-4.65H24v9.3h12.7c-.55 2.9-2.2 5.35-4.65 7l7.2 5.6C43.3 37.5 46.5 31.5 46.5 24.5z"/>
+            <path fill="#FBBC05" d="M10.8 28.55A14.6 14.6 0 0 1 9.5 24c0-1.6.3-3.15.8-4.55L3.8 14.4A22.4 22.4 0 0 0 1.5 24c0 3.55.85 6.9 2.35 9.85l6.95-5.3z"/>
+            <path fill="#34A853" d="M24 46.5c5.3 0 9.75-1.75 13-4.75l-7.2-5.6c-1.85 1.25-4.2 2-5.8 2-6.3 0-11.65-4.6-13.2-10.6l-6.95 5.3C7.3 40.9 14.9 46.5 24 46.5z"/>
+          </svg>
+          Continue with Google
+        </button>
+
+        <!-- Switch to login -->
+        <p class="switch-link">
+          Already have an account? <a onclick="switchTab('login')">Sign in</a>
+        </p>
+
+      </section>
+
+      <!-- ── Card footer ── -->
+      <footer class="card-footer">
+        <strong>Sri Aurobindo College</strong> · BCA Department<br/>
+        🔒 Secured with Firebase Auth &amp; Firestore
+      </footer>
+
+    </main>
+    <!-- /auth-card -->
+
+  </div>
+  <!-- /page-wrap -->
+
+
+  <!-- ══════════════════════════════════════════════════════════
+       ALL JAVASCRIPT
+  ══════════════════════════════════════════════════════════ -->
+  <script>
+
+    /* ══════════════════════════════════════════════════════
+       1.  FIREBASE INITIALISATION
+    ══════════════════════════════════════════════════════ */
+    const firebaseConfig = {
+      apiKey:            "AIzaSyCX5g8sPw_iG0HMujrZM8dG7w510c6jpC4",
+      authDomain:        "campus-hub-2220b.firebaseapp.com",
+      projectId:         "campus-hub-2220b",
+      storageBucket:     "campus-hub-2220b.firebasestorage.app",
+      messagingSenderId: "371742140259",
+      appId:             "1:371742140259:web:55a2b29fd269689abb5556"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth    = firebase.auth();
+    const db      = firebase.firestore();
+    // storage is available if needed
+    const storage = firebase.storage();
+
+
+    /* ══════════════════════════════════════════════════════
+       2.  AUTH STATE OBSERVER — redirect if already logged in
+    ══════════════════════════════════════════════════════ */
+    auth.onAuthStateChanged(function(user) {
+      if (user) {
+        window.location.replace('Home.html');
+      }
+    });
+
+
+    /* ══════════════════════════════════════════════════════
+       3.  DARK MODE
+    ══════════════════════════════════════════════════════ */
+    const htmlEl    = document.documentElement;
+    const toggleBtn = document.getElementById('darkToggle');
+
+    /** Apply stored preference immediately on load */
+    (function applyStoredTheme() {
+      if (localStorage.getItem('sacDark') === 'true') {
+        htmlEl.classList.add('dark');
+        toggleBtn.textContent = '☀️';
+      } else {
+        htmlEl.classList.remove('dark');
+        toggleBtn.textContent = '🌙';
+      }
+    })();
+
+    /** Toggle handler */
+    toggleBtn.addEventListener('click', function() {
+      const nowDark = htmlEl.classList.toggle('dark');
+      toggleBtn.textContent = nowDark ? '☀️' : '🌙';
+      localStorage.setItem('sacDark', nowDark);
+    });
+
+
+    /* ══════════════════════════════════════════════════════
+       4.  TAB SWITCHING
+    ══════════════════════════════════════════════════════ */
+    function switchTab(tab) {
+      // tabs
+      document.getElementById('tab-login').classList.toggle('active',  tab === 'login');
+      document.getElementById('tab-signup').classList.toggle('active', tab === 'signup');
+      document.getElementById('tab-login').setAttribute('aria-selected',  tab === 'login');
+      document.getElementById('tab-signup').setAttribute('aria-selected', tab === 'signup');
+      // panels
+      document.getElementById('panel-login').classList.toggle('active',  tab === 'login');
+      document.getElementById('panel-signup').classList.toggle('active', tab === 'signup');
+      // clear messages
+      clearMsg('login-msg');
+      clearMsg('signup-msg');
+    }
+
+
+    /* ══════════════════════════════════════════════════════
+       5.  PASSWORD SHOW / HIDE TOGGLE
+    ══════════════════════════════════════════════════════ */
+    function togglePw(inputId, btn) {
+      const el  = document.getElementById(inputId);
+      const show = el.type === 'password';
+      el.type        = show ? 'text' : 'password';
+      btn.textContent = show ? '🙈' : '👁️';
+      btn.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+    }
+
+
+    /* ══════════════════════════════════════════════════════
+       6.  PASSWORD STRENGTH INDICATOR
+    ══════════════════════════════════════════════════════ */
+    function handleStrength(val) {
+      const track = document.getElementById('strength-track');
+      const fill  = document.getElementById('strength-fill');
+      const text  = document.getElementById('strength-text');
+
+      if (!val) {
+        track.style.display = 'none';
+        text.style.display  = 'none';
+        return;
+      }
+      track.style.display = 'block';
+      text.style.display  = 'block';
+
+      // score 0-5
+      let score = 0;
+      if (val.length >= 6)           score++;
+      if (val.length >= 10)          score++;
+      if (/[A-Z]/.test(val))         score++;
+      if (/[0-9]/.test(val))         score++;
+      if (/[^A-Za-z0-9]/.test(val)) score++;
+
+      const levels = [
+        { label: 'Very Weak',   color: '#ef4444', pct: '15%' },
+        { label: 'Weak',        color: '#f97316', pct: '30%' },
+        { label: 'Fair',        color: '#eab308', pct: '55%' },
+        { label: 'Strong',      color: '#22c55e', pct: '80%' },
+        { label: 'Very Strong', color: '#16a34a', pct: '100%'},
+      ];
+      const lvl = levels[Math.max(0, Math.min(score - 1, 4))];
+      fill.style.width      = lvl.pct;
+      fill.style.background = lvl.color;
+      text.textContent      = lvl.label;
+      text.style.color      = lvl.color;
+    }
+
+
+    /* ══════════════════════════════════════════════════════
+       7.  MESSAGE HELPERS
+    ══════════════════════════════════════════════════════ */
+    function showMsg(boxId, text, type) {
+      type = type || 'error';
+      const box  = document.getElementById(boxId);
+      const span = document.getElementById(boxId + '-text');
+      if (span) span.textContent = text;
+      // set type class
+      box.className = 'msg ' + type + ' show';
+    }
+
+    function clearMsg(boxId) {
+      const box = document.getElementById(boxId);
+      if (box) box.className = 'msg error'; // hidden by default
+    }
+
+    /** Map Firebase error codes → human-readable strings */
+    function friendlyErr(code) {
+      const map = {
+        'auth/user-not-found':           'No account found with this email address.',
+        'auth/wrong-password':           'Incorrect password. Please try again.',
+        'auth/invalid-credential':       'Invalid email or password.',
+        'auth/invalid-email':            'Please enter a valid email address.',
+        'auth/email-already-in-use':     'An account with this email already exists.',
+        'auth/weak-password':            'Password must be at least 6 characters.',
+        'auth/too-many-requests':        'Too many attempts. Please try again later.',
+        'auth/network-request-failed':   'Network error. Check your internet connection.',
+        'auth/popup-closed-by-user':     'Google sign-in popup was closed.',
+        'auth/cancelled-popup-request':  'Only one popup window allowed at a time.',
+      };
+      return map[code] || 'Something went wrong. Please try again.';
+    }
+
+
+    /* ══════════════════════════════════════════════════════
+       8.  BUTTON LOADING STATE HELPERS
+    ══════════════════════════════════════════════════════ */
+    function setLoading(btnId, isLoading, label) {
+      const btn = document.getElementById(btnId);
+      if (isLoading) {
+        btn.disabled = true;
+        btn.querySelector('span').innerHTML = '<div class="spinner"></div> Please wait…';
+      } else {
+        btn.disabled = false;
+        btn.querySelector('span').textContent = label;
+      }
+    }
+
+
+    /* ══════════════════════════════════════════════════════
+       9.  FIRESTORE — SAVE USER (only if new)
+    ══════════════════════════════════════════════════════ */
+    async function saveUserIfNew(user, extras) {
+      extras = extras || {};
+      const ref  = db.collection('users').doc(user.uid);
+      const snap = await ref.get();
+      if (!snap.exists) {
+        await ref.set({
+          uid:       user.uid,
+          name:      extras.name     || user.displayName || '',
+          email:     user.email      || '',
+          role:      (extras.role || 'Student').toLowerCase(),
+          photoURL:  user.photoURL   || '',
+          provider:  extras.provider || 'email',
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        });
+      }
+    }
+
+
+    /* ══════════════════════════════════════════════════════
+       10. LOGIN FORM SUBMISSION
+    ══════════════════════════════════════════════════════ */
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      clearMsg('login-msg');
+
+      const email = document.getElementById('login-email').value.trim();
+      const pass  = document.getElementById('login-password').value;
+
+      // — Client-side validation —
+      if (!email) {
+        showMsg('login-msg', 'Please enter your email address.'); return;
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        showMsg('login-msg', 'Please enter a valid email address.'); return;
+      }
+      if (!pass) {
+        showMsg('login-msg', 'Please enter your password.'); return;
+      }
+      if (pass.length < 6) {
+        showMsg('login-msg', 'Password must be at least 6 characters.'); return;
+      }
+
+      setLoading('login-submit-btn', true, 'Sign In');
+      try {
+        await auth.signInWithEmailAndPassword(email, pass);
+        // onAuthStateChanged handles redirect
+      } catch (err) {
+        showMsg('login-msg', friendlyErr(err.code));
+        setLoading('login-submit-btn', false, 'Sign In');
+      }
+    });
+
+
+    /* ══════════════════════════════════════════════════════
+       11. SIGN UP FORM SUBMISSION
+    ══════════════════════════════════════════════════════ */
+    document.getElementById('signupForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      clearMsg('signup-msg');
+
+      const name    = document.getElementById('signup-name').value.trim();
+      const email   = document.getElementById('signup-email').value.trim();
+      const pass    = document.getElementById('signup-password').value;
+      const confirm = document.getElementById('signup-confirm').value;
+      const role    = document.getElementById('signup-role').value;
+
+      // — Client-side validation —
+      if (!name || name.length < 2) {
+        showMsg('signup-msg', 'Please enter your full name (at least 2 characters).'); return;
+      }
+      if (!email) {
+        showMsg('signup-msg', 'Please enter your email address.'); return;
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        showMsg('signup-msg', 'Please enter a valid email address.'); return;
+      }
+      if (!pass) {
+        showMsg('signup-msg', 'Please create a password.'); return;
+      }
+      if (pass.length < 6) {
+        showMsg('signup-msg', 'Password must be at least 6 characters long.'); return;
+      }
+      if (pass !== confirm) {
+        showMsg('signup-msg', 'Passwords do not match. Please re-enter.'); return;
+      }
+      if (!role) {
+        showMsg('signup-msg', 'Please select your role (Student, Lecturer, or Admin).'); return;
+      }
+
+      setLoading('signup-submit-btn', true, 'Create Account');
+      try {
+        const cred = await auth.createUserWithEmailAndPassword(email, pass);
+
+        // Update Firebase Auth profile display name
+        await cred.user.updateProfile({ displayName: name });
+
+        // Save to Firestore
+        await saveUserIfNew(cred.user, { name, role, provider: 'email' });
+
+        // Redirect (also triggered by onAuthStateChanged)
+        window.location.replace('Home.html');
+      } catch (err) {
+        showMsg('signup-msg', friendlyErr(err.code));
+        setLoading('signup-submit-btn', false, 'Create Account');
+      }
+    });
+
+
+    /* ══════════════════════════════════════════════════════
+       12. GOOGLE SIGN-IN / SIGN-UP
+    ══════════════════════════════════════════════════════ */
+    async function googleAuth(context) {
+      // context = 'login' | 'signup'
+      clearMsg(context + '-msg');
+
+      const btnId = context + '-google-btn';
+      const btn   = document.getElementById(btnId);
+      btn.disabled = true;
+      btn.innerHTML = '<div class="spinner" style="border-top-color:#6366f1;border-color:rgba(99,102,241,0.25);margin-right:8px;"></div> Connecting…';
+
+      try {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        provider.addScope('profile');
+        provider.addScope('email');
+
+        const result = await auth.signInWithPopup(provider);
+        const user   = result.user;
+
+        // Save to Firestore if new user
+        await saveUserIfNew(user, { role: 'student', provider: 'google' });
+
+        window.location.replace('Home.html');
+      } catch (err) {
+        showMsg(context + '-msg', friendlyErr(err.code));
+        // Restore button
+        btn.disabled = false;
+        btn.innerHTML = `
+          <svg class="google-icon" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+            <path fill="#EA4335" d="M24 9.5c3.15 0 5.64 1.08 7.55 2.84l5.6-5.6C33.8 3.6 29.3 1.5 24 1.5 14.9 1.5 7.3 7.1 4.3 15l6.5 5.05C12.3 14.1 17.7 9.5 24 9.5z"/>
+            <path fill="#4285F4" d="M46.5 24.5c0-1.6-.15-3.15-.4-4.65H24v9.3h12.7c-.55 2.9-2.2 5.35-4.65 7l7.2 5.6C43.3 37.5 46.5 31.5 46.5 24.5z"/>
+            <path fill="#FBBC05" d="M10.8 28.55A14.6 14.6 0 0 1 9.5 24c0-1.6.3-3.15.8-4.55L3.8 14.4A22.4 22.4 0 0 0 1.5 24c0 3.55.85 6.9 2.35 9.85l6.95-5.3z"/>
+            <path fill="#34A853" d="M24 46.5c5.3 0 9.75-1.75 13-4.75l-7.2-5.6c-1.85 1.25-4.2 2-5.8 2-6.3 0-11.65-4.6-13.2-10.6l-6.95 5.3C7.3 40.9 14.9 46.5 24 46.5z"/>
+          </svg>
+          Continue with Google`;
+      }
+    }
+
+
+    /* ══════════════════════════════════════════════════════
+       13. FORGOT PASSWORD
+    ══════════════════════════════════════════════════════ */
+    function handleForgot() {
+      alert('Password reset link sent to your email (simulated)');
+    }
+
+  </script>
+  <script src="js/site-nav.js"></script>
+</body>
+</html>
+
+

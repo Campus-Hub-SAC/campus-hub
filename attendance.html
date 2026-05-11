@@ -1,0 +1,1793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Attendance – Sri Aurobindo College BCA</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { darkMode: 'class' };</script>
+
+  <!-- Firebase Compat SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
+
+  <style>
+    /* ═══════════ RESET & FONTS ═══════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --pink:   #ec4899;
+      --indigo: #6366f1;
+      --violet: #8b5cf6;
+      --grad:   linear-gradient(135deg, #ec4899 0%, #8b5cf6 50%, #6366f1 100%);
+      --grad-h: linear-gradient(135deg, #db2777 0%, #7c3aed 50%, #4f46e5 100%);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      background-color: #f9fafb;
+      color: #111827;
+      transition: background-color 0.4s ease, color 0.4s ease;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+
+    html.dark body {
+      background-color: #000000;
+      color: #f9fafb;
+    }
+
+    /* ═══════════ NAVBAR ═══════════ */
+    .navbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 1000;
+      height: 64px;
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(0,0,0,0.07);
+      display: flex;
+      align-items: center;
+      padding: 0 1.5rem;
+      gap: 1rem;
+      transition: background 0.4s ease;
+    }
+    html.dark .navbar {
+      background: rgba(0,0,0,0.85);
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+    .nav-logo {
+      width: 38px; height: 38px;
+      border-radius: 10px;
+      background: var(--grad);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 800;
+      font-size: 0.85rem;
+      color: #fff;
+      letter-spacing: 0.5px;
+      flex-shrink: 0;
+    }
+    .nav-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: #111827;
+      line-height: 1.1;
+    }
+    html.dark .nav-title { color: #f9fafb; }
+    .nav-subtitle {
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: var(--grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 0.15rem;
+      flex: 1;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .nav-links::-webkit-scrollbar { display: none; }
+    .nav-link {
+      white-space: nowrap;
+      padding: 6px 11px;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #6b7280;
+      text-decoration: none;
+      transition: color 0.2s, background 0.2s;
+    }
+    .nav-link:hover {
+      color: #111827;
+      background: #f3f4f6;
+    }
+    html.dark .nav-link { color: #9ca3af; }
+    html.dark .nav-link:hover {
+      color: #f9fafb;
+      background: #1f2937;
+    }
+    .nav-link.active {
+      background: var(--grad);
+      color: #fff !important;
+      box-shadow: 0 2px 10px rgba(139,92,246,0.35);
+    }
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      flex-shrink: 0;
+    }
+    .user-chip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 12px 5px 5px;
+      border-radius: 50px;
+      background: #f3f4f6;
+      cursor: default;
+    }
+    html.dark .user-chip { background: #1f2937; }
+    .user-avatar {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: var(--grad);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 800;
+      color: #fff;
+    }
+    .user-name {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #374151;
+      max-width: 90px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    html.dark .user-name { color: #e5e7eb; }
+    .btn-logout {
+      padding: 7px 14px;
+      border-radius: 10px;
+      border: 1.5px solid #e5e7eb;
+      background: #fff;
+      color: #374151;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    html.dark .btn-logout {
+      background: #1f2937;
+      border-color: #374151;
+      color: #e5e7eb;
+    }
+    .btn-logout:hover {
+      border-color: #ec4899;
+      color: #ec4899;
+      background: #fdf2f8;
+    }
+    html.dark .btn-logout:hover { background: #111827; }
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 8px;
+      transition: background 0.2s;
+      background: none;
+      border: none;
+    }
+    .hamburger:hover { background: #f3f4f6; }
+    html.dark .hamburger:hover { background: #1f2937; }
+    .hamburger span {
+      display: block;
+      width: 22px; height: 2px;
+      background: #6b7280;
+      border-radius: 2px;
+      transition: all 0.3s;
+    }
+
+    /* Mobile Menu */
+    .mobile-menu {
+      display: none;
+      position: fixed;
+      top: 64px; left: 0; right: 0; bottom: 0;
+      z-index: 999;
+      background: rgba(0,0,0,0.4);
+      backdrop-filter: blur(4px);
+    }
+    .mobile-menu.open { display: block; }
+    .mobile-menu-panel {
+      position: absolute;
+      top: 0; right: 0;
+      width: min(320px, 90vw);
+      height: 100%;
+      background: #fff;
+      overflow-y: auto;
+      padding: 1.5rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      box-shadow: -8px 0 32px rgba(0,0,0,0.12);
+    }
+    html.dark .mobile-menu-panel { background: #111827; }
+    .mobile-link {
+      display: block;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #374151;
+      text-decoration: none;
+      transition: background 0.2s, color 0.2s;
+    }
+    html.dark .mobile-link { color: #e5e7eb; }
+    .mobile-link:hover { background: #f3f4f6; color: #111827; }
+    html.dark .mobile-link:hover { background: #1f2937; color: #f9fafb; }
+    .mobile-link.active {
+      background: var(--grad);
+      color: #fff;
+    }
+    .mobile-divider {
+      height: 1px;
+      background: #e5e7eb;
+      margin: 0.5rem 0;
+    }
+    html.dark .mobile-divider { background: #374151; }
+
+    /* Dark mode toggle button */
+    #darkToggle {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      border: 1.5px solid #e5e7eb;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      background: #fff;
+      transition: background 0.3s, box-shadow 0.3s, transform 0.2s;
+      outline: none;
+    }
+    #darkToggle:hover { transform: scale(1.08); }
+    html.dark #darkToggle {
+      background: #1f2937;
+      border-color: #374151;
+    }
+
+    /* Layout wrapper */
+    .page-wrap {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1.5rem 1rem 3rem;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Page header */
+    .page-header {
+      margin-bottom: 2rem;
+      padding-top: 0.5rem;
+    }
+    .page-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 2rem;
+      font-weight: 800;
+      color: #111827;
+      line-height: 1.2;
+    }
+    html.dark .page-title { color: #f9fafb; }
+    .page-subtitle {
+      font-size: 0.95rem;
+      font-weight: 500;
+      margin-top: 0.4rem;
+      background: var(--grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Cards */
+    .card {
+      background: #ffffff;
+      border-radius: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.04);
+      transition: background 0.4s ease, box-shadow 0.4s ease;
+      overflow: hidden;
+    }
+    html.dark .card {
+      background: #111827;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.4), 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05);
+    }
+    .card-accent {
+      height: 4px;
+      background: var(--grad);
+      width: 100%;
+    }
+    .card-body {
+      padding: 1.5rem;
+    }
+    .card-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #111827;
+      margin-bottom: 0.3rem;
+    }
+    html.dark .card-title { color: #f9fafb; }
+    .card-desc {
+      font-size: 0.82rem;
+      color: #6b7280;
+      margin-bottom: 1.25rem;
+    }
+
+    /* Buttons */
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 0 1.5rem;
+      height: 46px;
+      border: none;
+      border-radius: 12px;
+      background: var(--grad);
+      color: #fff;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(139,92,246,0.35);
+      transition: box-shadow 0.25s, transform 0.15s;
+      outline: none;
+      text-decoration: none;
+    }
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--grad-h);
+      opacity: 0;
+      transition: opacity 0.25s;
+    }
+    .btn-primary:hover::before { opacity: 1; }
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(139,92,246,0.4);
+    }
+    .btn-primary:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 8px rgba(139,92,246,0.3);
+    }
+    .btn-primary:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .btn-primary span { position: relative; z-index: 1; }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 0 1.2rem;
+      height: 42px;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 12px;
+      background: #fff;
+      color: #374151;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+      outline: none;
+      text-decoration: none;
+    }
+    .btn-secondary:hover {
+      background: #f9fafb;
+      border-color: #d1d5db;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+      transform: translateY(-1px);
+    }
+    .btn-secondary:active { transform: translateY(0); }
+    html.dark .btn-secondary {
+      background: #1f2937;
+      border-color: #374151;
+      color: #e5e7eb;
+    }
+    html.dark .btn-secondary:hover {
+      background: #111827;
+      border-color: #4b5563;
+    }
+
+    .btn-sm {
+      height: 34px;
+      padding: 0 0.9rem;
+      font-size: 0.78rem;
+      border-radius: 8px;
+    }
+
+    .btn-green {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 0 1rem;
+      height: 36px;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #fff;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      outline: none;
+    }
+    .btn-green:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(16,185,129,0.4); }
+
+    .btn-red {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 0 1rem;
+      height: 36px;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #f87171, #ef4444);
+      color: #fff;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      outline: none;
+    }
+    .btn-red:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(239,68,68,0.4); }
+
+    /* Form inputs */
+    .field { margin-bottom: 1rem; }
+    .field-label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #374151;
+      margin-bottom: 5px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    html.dark .field-label { color: #9ca3af; }
+
+    .input-wrap { position: relative; }
+    .input-icon {
+      position: absolute;
+      left: 13px; top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.95rem;
+      pointer-events: none;
+      opacity: 0.55;
+    }
+    .form-input, .form-select {
+      width: 100%;
+      height: 46px;
+      padding: 0 14px 0 40px;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 12px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: #111827;
+      background: #f9fafb;
+      outline: none;
+      transition: border-color 0.25s, background 0.25s, box-shadow 0.25s;
+    }
+    .form-input.no-icon, .form-select.no-icon {
+      padding-left: 14px;
+    }
+    .form-input::placeholder { color: #9ca3af; font-weight: 400; }
+    .form-input:focus, .form-select:focus {
+      border-color: #8b5cf6;
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(139,92,246,0.12);
+    }
+    html.dark .form-input, html.dark .form-select {
+      background: #1f2937;
+      border-color: #374151;
+      color: #f9fafb;
+    }
+    html.dark .form-input::placeholder { color: #4b5563; }
+    html.dark .form-input:focus, html.dark .form-select:focus {
+      border-color: #8b5cf6;
+      background: #111827;
+      box-shadow: 0 0 0 3px rgba(139,92,246,0.18);
+    }
+    .form-select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 2.5rem;
+    }
+    html.dark .form-select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239ca3af' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    }
+
+    /* Badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      border-radius: 50px;
+      font-size: 0.73rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+    }
+    .badge-green { background: #dcfce7; color: #16a34a; }
+    .badge-red   { background: #fee2e2; color: #dc2626; }
+    .badge-blue  { background: #dbeafe; color: #2563eb; }
+    .badge-gray  { background: #f3f4f6; color: #6b7280; }
+    .badge-violet{ background: #ede9fe; color: #7c3aed; }
+    html.dark .badge-green { background: rgba(22,163,74,0.18); color: #4ade80; }
+    html.dark .badge-red   { background: rgba(220,38,38,0.18); color: #f87171; }
+    html.dark .badge-blue  { background: rgba(37,99,235,0.18); color: #60a5fa; }
+    html.dark .badge-gray  { background: rgba(107,114,128,0.18); color: #9ca3af; }
+    html.dark .badge-violet{ background: rgba(124,58,237,0.18); color: #c4b5fd; }
+
+    /* Toggle Switch */
+    .toggle-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .toggle-btn {
+      width: 52px;
+      height: 28px;
+      border-radius: 50px;
+      border: none;
+      cursor: pointer;
+      position: relative;
+      transition: background 0.3s;
+      flex-shrink: 0;
+      outline: none;
+    }
+    .toggle-btn.present { background: linear-gradient(135deg, #10b981, #059669); }
+    .toggle-btn.absent  { background: #d1d5db; }
+    html.dark .toggle-btn.absent { background: #374151; }
+    .toggle-knob {
+      position: absolute;
+      top: 3px;
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+      transition: left 0.3s;
+    }
+    .toggle-btn.present .toggle-knob { left: 27px; }
+    .toggle-btn.absent  .toggle-knob { left: 3px;  }
+
+    /* Stat Cards */
+    .stat-card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 1.2rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.07);
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+    html.dark .stat-card {
+      background: #111827;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.4), 0 4px 16px rgba(0,0,0,0.5);
+    }
+    .stat-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #9ca3af;
+    }
+    .stat-value {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #111827;
+      line-height: 1;
+    }
+    html.dark .stat-value { color: #f9fafb; }
+
+    /* Progress bar */
+    .progress-bar-wrap {
+      width: 100%;
+      height: 8px;
+      background: #f3f4f6;
+      border-radius: 50px;
+      overflow: hidden;
+    }
+    html.dark .progress-bar-wrap { background: #374151; }
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 50px;
+      background: var(--grad);
+      transition: width 0.8s ease;
+    }
+    .progress-bar-fill.green { background: linear-gradient(90deg,#10b981,#059669); }
+    .progress-bar-fill.red   { background: linear-gradient(90deg,#f87171,#ef4444); }
+    .progress-bar-fill.yellow{ background: linear-gradient(90deg,#fbbf24,#f59e0b); }
+
+    /* Table */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+    .data-table th {
+      text-align: left;
+      padding: 10px 14px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #9ca3af;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    html.dark .data-table th { border-bottom-color: #1f2937; }
+    .data-table td {
+      padding: 11px 14px;
+      color: #374151;
+      border-bottom: 1px solid #f9fafb;
+      vertical-align: middle;
+    }
+    html.dark .data-table td {
+      color: #d1d5db;
+      border-bottom-color: #1f2937;
+    }
+    .data-table tr:hover td { background: #fafafa; }
+    html.dark .data-table tr:hover td { background: #1a2332; }
+
+    /* Circular Progress */
+    .circ-wrap {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .circ-wrap svg { transform: rotate(-90deg); }
+    .circ-track { fill: none; stroke: #f3f4f6; stroke-width: 10; }
+    html.dark .circ-track { stroke: #1f2937; }
+    .circ-fill {
+      fill: none;
+      stroke-width: 10;
+      stroke-linecap: round;
+      stroke-dasharray: 314;
+      stroke-dashoffset: 314;
+      transition: stroke-dashoffset 1.2s ease;
+    }
+    .circ-label {
+      position: absolute;
+      text-align: center;
+    }
+    .circ-pct {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: #111827;
+      line-height: 1;
+    }
+    html.dark .circ-pct { color: #f9fafb; }
+    .circ-sub {
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: #9ca3af;
+      margin-top: 2px;
+    }
+
+    /* Student row */
+    .student-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      border-radius: 12px;
+      background: #f9fafb;
+      margin-bottom: 8px;
+      transition: background 0.2s;
+    }
+    html.dark .student-row { background: #1f2937; }
+    .student-row:hover { background: #f3f4f6; }
+    html.dark .student-row:hover { background: #374151; }
+    .student-info { display: flex; align-items: center; gap: 10px; }
+    .student-avatar {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      background: var(--grad);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .student-name {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #111827;
+    }
+    html.dark .student-name { color: #f9fafb; }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 2rem; right: 2rem;
+      z-index: 9999;
+      max-width: 340px;
+      padding: 14px 20px;
+      border-radius: 14px;
+      background: #111827;
+      color: #f9fafb;
+      font-size: 0.88rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.22);
+      transform: translateY(20px);
+      opacity: 0;
+      transition: transform 0.35s ease, opacity 0.35s ease;
+      pointer-events: none;
+    }
+    html.dark .toast { background: #1f2937; }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.success { border-left: 4px solid #10b981; }
+    .toast.error   { border-left: 4px solid #ef4444; }
+    .toast.info    { border-left: 4px solid #6366f1; }
+
+    /* Loading */
+    .loading-spinner {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      border: 3px solid #f3f4f6;
+      border-top-color: #8b5cf6;
+      animation: spin 0.8s linear infinite;
+    }
+    html.dark .loading-spinner { border-color: #374151; border-top-color: #8b5cf6; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Section spacing */
+    .section-gap { margin-bottom: 2rem; }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: #9ca3af;
+    }
+    .empty-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+    .empty-title { font-size: 0.95rem; font-weight: 700; color: #6b7280; margin-bottom: 0.3rem; }
+    html.dark .empty-title { color: #9ca3af; }
+    .empty-desc { font-size: 0.82rem; }
+
+    /* Filter row */
+    .filter-row {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+    .filter-row .form-input,
+    .filter-row .form-select {
+      width: auto;
+      flex: 1;
+      min-width: 140px;
+    }
+
+    /* Scrollable table container */
+    .table-scroll {
+      overflow-x: auto;
+      border-radius: 12px;
+    }
+
+    /* Group summary item */
+    .group-summary-item {
+      margin-bottom: 1.1rem;
+    }
+    .group-summary-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .group-summary-name {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #111827;
+    }
+    html.dark .group-summary-name { color: #f9fafb; }
+    .group-summary-pct {
+      font-size: 0.85rem;
+      font-weight: 800;
+      background: var(--grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Access restricted */
+    .access-restricted {
+      text-align: center;
+      padding: 4rem 2rem;
+    }
+    .access-icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+    }
+    .access-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #111827;
+      margin-bottom: 0.5rem;
+    }
+    html.dark .access-title { color: #f9fafb; }
+    .access-desc {
+      font-size: 0.9rem;
+      color: #6b7280;
+      max-width: 400px;
+      margin: 0 auto 1.5rem;
+    }
+
+    /* Footer */
+    .footer {
+      margin-top: 4rem;
+      padding: 2rem 1.5rem;
+      border-top: 1px solid #e5e7eb;
+      text-align: center;
+    }
+    html.dark .footer { border-top-color: #1f2937; }
+    .footer-text {
+      font-size: 0.8rem;
+      color: #9ca3af;
+      font-weight: 500;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .hamburger { display: flex; }
+      .user-chip .user-name { display: none; }
+      .page-title { font-size: 1.5rem; }
+      .stat-value { font-size: 1.4rem; }
+    }
+
+    /* Utilities */
+    .flex-center { display: flex; align-items: center; justify-content: center; }
+    .text-gradient {
+      background: var(--grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; }
+    @media (max-width:768px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    }
+    main { padding-top: 64px; }
+  </style>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- ═══════════ NAVBAR ═══════════ -->
+  <nav class="navbar">
+    <a href="index.html" class="nav-brand">
+      <div class="nav-logo">SAC</div>
+      <div>
+        <div class="nav-title">Sri Aurobindo</div>
+        <div class="nav-subtitle">BCA Department</div>
+      </div>
+    </a>
+
+    <div class="nav-links" id="navLinks">
+      <a href="index.html" class="nav-link">Home</a>
+      <a href="resources.html" class="nav-link">Resources</a>
+      <a href="upload.html" class="nav-link">Upload</a>
+      <a href="profile.html" class="nav-link">Profile</a>
+      <a href="events.html" class="nav-link">Events</a>
+      <a href="Home.html" class="nav-link">Campus Hub</a>
+      <a href="about.html" class="nav-link">About</a>
+      <a href="gallery.html" class="nav-link">Gallery</a>
+      <a href="notifications.html" class="nav-link">Notifications</a>
+      <a href="assignments.html" class="nav-link">Assignments</a>
+      <a href="students-hub.html" class="nav-link">Students Hub</a>
+      <a href="lecturers-hub.html" class="nav-link">Lecturers Hub</a>
+      <a href="online-test.html" class="nav-link">Online Tests</a>
+      <a href="attendance.html" class="nav-link active">Attendance</a>
+      <a href="admin.html" class="nav-link" id="adminLink" style="display:none">Admin</a>
+    </div>
+
+    <div class="nav-right">
+      <button id="darkToggle" aria-label="Toggle dark mode">🌙</button>
+      <div class="user-chip" id="userChip" style="display:none">
+        <div class="user-avatar" id="userAvatar">?</div>
+        <span class="user-name" id="userName">...</span>
+      </div>
+      <button class="btn-logout" id="logoutBtn" style="display:none;" onclick="handleLogout()">Logout</button>
+      <button class="hamburger" id="hamburgerBtn" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ═══════════ MOBILE MENU ═══════════ -->
+  <div class="mobile-menu" id="mobileMenu">
+    <div class="mobile-menu-panel">
+      <div style="display:flex;align-items:center;gap:10px;padding:0 4px 1rem;">
+        <div class="user-avatar" id="mobileAvatar">?</div>
+        <div>
+          <div style="font-size:0.88rem;font-weight:700;color:#111827" class="dark:text-gray-100" id="mobileUserName">Loading...</div>
+          <div style="font-size:0.72rem;color:#9ca3af" id="mobileUserRole">—</div>
+        </div>
+      </div>
+      <div class="mobile-divider"></div>
+      <a href="index.html" class="mobile-link">🏠 Home</a>
+      <a href="resources.html" class="mobile-link">📚 Resources</a>
+      <a href="upload.html" class="mobile-link">📤 Upload</a>
+      <a href="profile.html" class="mobile-link">👤 Profile</a>
+      <a href="events.html" class="mobile-link">🎉 Events</a>
+      <a href="Home.html" class="mobile-link">🏛️ Campus Hub</a>
+      <a href="about.html" class="mobile-link">ℹ️ About</a>
+      <a href="gallery.html" class="mobile-link">🖼️ Gallery</a>
+      <a href="notifications.html" class="mobile-link">🔔 Notifications</a>
+      <a href="assignments.html" class="mobile-link">📝 Assignments</a>
+      <a href="students-hub.html" class="mobile-link">🎓 Students Hub</a>
+      <a href="lecturers-hub.html" class="mobile-link">👨‍🏫 Lecturers Hub</a>
+      <a href="online-test.html" class="mobile-link">🧪 Online Tests</a>
+      <a href="attendance.html" class="mobile-link active">📊 Attendance</a>
+      <a href="admin.html" class="mobile-link" id="mobileAdminLink" style="display:none">🔐 Admin</a>
+      <div class="mobile-divider"></div>
+      <button class="btn-secondary" style="width:100%;justify-content:center;" onclick="handleLogout()">🚪 Logout</button>
+    </div>
+  </div>
+
+  <!-- ═══════════ MAIN ═══════════ -->
+  <main>
+    <div class="page-wrap">
+
+      <!-- Page Header -->
+      <div class="page-header">
+        <h1 class="page-title">📊 Attendance</h1>
+        <p class="page-subtitle">Mark, track, and manage student attendance records</p>
+      </div>
+
+      <!-- Loading State -->
+      <div id="loadingState" style="display:flex;align-items:center;justify-content:center;min-height:300px;gap:1rem;flex-direction:column;">
+        <div class="loading-spinner"></div>
+        <p style="color:#9ca3af;font-size:0.9rem;font-weight:500;">Loading attendance data…</p>
+      </div>
+
+      <!-- Lecturer / Admin View -->
+      <div id="lecturerView" style="display:none">
+
+        <!-- Section 1: Mark Attendance -->
+        <div class="card section-gap" id="markAttendanceCard">
+          <div class="card-accent"></div>
+          <div class="card-body">
+            <h2 class="card-title">✅ Mark Attendance</h2>
+            <p class="card-desc">Select a group and date, then mark each student's attendance.</p>
+
+            <div class="grid-2" style="margin-bottom:1rem;">
+              <div class="field">
+                <label class="field-label">Select Group</label>
+                <div class="input-wrap">
+                  <span class="input-icon">👥</span>
+                  <select class="form-select" id="markGroupSelect">
+                    <option value="">— Choose a group —</option>
+                  </select>
+                </div>
+              </div>
+              <div class="field">
+                <label class="field-label">Select Date</label>
+                <div class="input-wrap">
+                  <span class="input-icon">📅</span>
+                  <input type="date" class="form-input" id="markDateInput"/>
+                </div>
+              </div>
+            </div>
+
+            <!-- Student List Placeholder -->
+            <div id="studentListWrap" style="display:none">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;flex-wrap:wrap;gap:0.5rem;">
+                <span style="font-size:0.85rem;font-weight:700;color:#6b7280;" id="studentCountLabel">0 students</span>
+                <div style="display:flex;gap:0.5rem;">
+                  <button class="btn-green btn-sm" onclick="markAll('present')">✅ Mark All Present</button>
+                  <button class="btn-red btn-sm" onclick="markAll('absent')">❌ Mark All Absent</button>
+                </div>
+              </div>
+              <div id="studentList"></div>
+              <div style="margin-top:1.25rem;">
+                <button class="btn-primary" id="saveAttendanceBtn" onclick="saveAttendance()">
+                  <span>💾 Save Attendance</span>
+                </button>
+              </div>
+            </div>
+
+            <div id="studentListLoading" style="display:none;text-align:center;padding:2rem;">
+              <div class="loading-spinner" style="margin:0 auto;"></div>
+              <p style="margin-top:0.75rem;color:#9ca3af;font-size:0.85rem;">Loading students…</p>
+            </div>
+
+            <div id="studentListEmpty" style="display:none;">
+              <div class="empty-state">
+                <div class="empty-icon">👤</div>
+                <div class="empty-title">No students in this group</div>
+                <div class="empty-desc">Add students to this group first.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2: Attendance Records -->
+        <div class="card section-gap">
+          <div class="card-accent"></div>
+          <div class="card-body">
+            <h2 class="card-title">📋 Attendance Records</h2>
+            <p class="card-desc">Recent attendance records. Updates in real time.</p>
+
+            <div class="filter-row">
+              <div class="input-wrap" style="flex:1;min-width:140px;">
+                <span class="input-icon">📅</span>
+                <input type="date" class="form-input" id="filterDate" placeholder="Filter by date" onchange="applyRecordFilters()"/>
+              </div>
+              <div class="input-wrap" style="flex:1;min-width:140px;">
+                <span class="input-icon">👥</span>
+                <select class="form-select" id="filterGroup" onchange="applyRecordFilters()">
+                  <option value="">All Groups</option>
+                </select>
+              </div>
+              <button class="btn-secondary btn-sm" onclick="clearRecordFilters()">✕ Clear</button>
+            </div>
+
+            <div class="table-scroll">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Group</th>
+                    <th>Date</th>
+                    <th>Student Name</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="recordsTbody">
+                  <tr><td colspan="4" style="text-align:center;padding:2rem;color:#9ca3af;">Loading…</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div id="recordsEmpty" style="display:none;">
+              <div class="empty-state">
+                <div class="empty-icon">📭</div>
+                <div class="empty-title">No records found</div>
+                <div class="empty-desc">No attendance records match your filters.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 3: Group Summary -->
+        <div class="card section-gap">
+          <div class="card-accent"></div>
+          <div class="card-body">
+            <h2 class="card-title">📈 Group Attendance Summary</h2>
+            <p class="card-desc">Overall attendance percentage per group you manage.</p>
+            <div id="groupSummaryList">
+              <div style="text-align:center;padding:2rem;">
+                <div class="loading-spinner" style="margin:0 auto;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- end lecturerView -->
+
+      <!-- Student View -->
+      <div id="studentView" style="display:none">
+
+        <!-- Section 1: Overview -->
+        <div class="card section-gap">
+          <div class="card-accent"></div>
+          <div class="card-body">
+            <h2 class="card-title">📊 My Attendance Overview</h2>
+            <p class="card-desc">Your overall and per-subject attendance at a glance.</p>
+
+            <div style="display:flex;flex-direction:column;align-items:center;gap:1.5rem;margin-bottom:2rem;" id="overviewContent">
+              <div style="text-align:center;padding:2rem;">
+                <div class="loading-spinner" style="margin:0 auto;"></div>
+                <p style="margin-top:0.75rem;color:#9ca3af;font-size:0.85rem;">Calculating…</p>
+              </div>
+            </div>
+
+            <div id="subjectBreakdownWrap">
+              <h3 style="font-size:0.88rem;font-weight:700;color:#374151;margin-bottom:1rem;letter-spacing:0.03em;text-transform:uppercase;" class="dark-label">Per-Subject Breakdown</h3>
+              <div id="subjectBreakdown">
+                <div style="text-align:center;padding:1rem;color:#9ca3af;font-size:0.85rem;">Loading subjects…</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2: Attendance Log -->
+        <div class="card section-gap">
+          <div class="card-accent"></div>
+          <div class="card-body">
+            <h2 class="card-title">📅 My Attendance Log</h2>
+            <p class="card-desc">Your complete attendance history.</p>
+
+            <div class="filter-row">
+              <div class="input-wrap" style="flex:1;min-width:140px;">
+                <span class="input-icon">📅</span>
+                <input type="date" class="form-input" id="stuFilterFrom" placeholder="From date" onchange="applyStudentFilters()"/>
+              </div>
+              <div class="input-wrap" style="flex:1;min-width:140px;">
+                <span class="input-icon">📅</span>
+                <input type="date" class="form-input" id="stuFilterTo" placeholder="To date" onchange="applyStudentFilters()"/>
+              </div>
+              <div class="input-wrap" style="flex:1;min-width:140px;">
+                <span class="input-icon">👥</span>
+                <select class="form-select" id="stuFilterGroup" onchange="applyStudentFilters()">
+                  <option value="">All Subjects</option>
+                </select>
+              </div>
+              <button class="btn-secondary btn-sm" onclick="clearStudentFilters()">✕ Clear</button>
+            </div>
+
+            <div class="table-scroll">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Group / Subject</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="stuLogTbody">
+                  <tr><td colspan="3" style="text-align:center;padding:2rem;color:#9ca3af;">Loading…</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- end studentView -->
+
+      <!-- Access Restricted View -->
+      <div id="restrictedView" style="display:none">
+        <div class="card">
+          <div class="card-accent"></div>
+          <div class="card-body">
+            <div class="access-restricted">
+              <div class="access-icon">🔒</div>
+              <div class="access-title">Access Restricted</div>
+              <p class="access-desc">Your account role does not have permission to view the Attendance module. Please contact your administrator.</p>
+              <a href="index.html" class="btn-primary" style="display:inline-flex;width:auto;padding:0 2rem;">
+                <span>🏠 Go to Home</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end page-wrap -->
+
+    <!-- Footer -->
+    <footer class="footer">
+      <p class="footer-text">© 2025 Sri Aurobindo College – BCA Department · All rights reserved · Built with ❤️ for Campus Hub</p>
+    </footer>
+  </main>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <!-- ═══════════ JAVASCRIPT ═══════════ -->
+  <script>
+    /* ── Firebase ── */
+    const firebaseConfig = {
+      apiKey: "AIzaSyCX5g8sPw_iG0HMujrZM8dG7w510c6jpC4",
+      authDomain: "campus-hub-2220b.firebaseapp.com",
+      projectId: "campus-hub-2220b",
+      storageBucket: "campus-hub-2220b.firebasestorage.app",
+      messagingSenderId: "371742140259",
+      appId: "1:371742140259:web:55a2b29fd269689abb5556"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db   = firebase.firestore();
+
+    /* ── State ── */
+    let currentUser    = null;
+    let currentRole    = null;
+    let myGroups       = [];
+    let studentsMap    = {};   // uid → {name, role}
+    let attendanceData = [];   // raw records (lecturer view)
+    let stuAttendance  = [];   // raw records (student view)
+    let studentStatuses= {};   // uid → 'present'|'absent'
+    let selectedGroupId= '';
+    let selectedGroupName='';
+    let recordsListener= null;
+    let stuListener    = null;
+
+    /* ── Dark mode ── */
+    const darkToggle = document.getElementById('darkToggle');
+    function applyDark(on) {
+      document.documentElement.classList.toggle('dark', on);
+      darkToggle.textContent = on ? '☀️' : '🌙';
+    }
+    const savedDark = localStorage.getItem('darkMode') === 'true';
+    applyDark(savedDark);
+    darkToggle.addEventListener('click', () => {
+      const isDark = document.documentElement.classList.toggle('dark');
+      darkToggle.textContent = isDark ? '☀️' : '🌙';
+      localStorage.setItem('darkMode', isDark);
+    });
+
+    /* ── Hamburger ── */
+    document.getElementById('hamburgerBtn').addEventListener('click', () => {
+      document.getElementById('mobileMenu').classList.toggle('open');
+    });
+    document.getElementById('mobileMenu').addEventListener('click', e => {
+      if (e.target === document.getElementById('mobileMenu'))
+        document.getElementById('mobileMenu').classList.remove('open');
+    });
+
+    /* ── Toast ── */
+    let toastTimer;
+    function showToast(msg, type='success') {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = `toast show ${type}`;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
+    }
+
+    /* ── Logout ── */
+    function handleLogout() {
+      auth.signOut().then(() => window.location.href = 'index.html');
+    }
+
+    /* ── Today's date ── */
+    function todayStr() {
+      return new Date().toISOString().split('T')[0];
+    }
+
+    /* ── Auth Guard ── */
+    auth.onAuthStateChanged(async user => {
+      if (!user) { window.location.href = 'index.html'; return; }
+      currentUser = user;
+
+      const snap = await db.collection('users').doc(user.uid).get();
+      if (!snap.exists) { window.location.href = 'index.html'; return; }
+      const data = snap.data();
+      currentRole = (data.role || '').trim();
+
+      // Navbar UI
+      const initials = (data.name || data.email || '?').split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+      document.getElementById('userAvatar').textContent = initials;
+      document.getElementById('mobileAvatar').textContent = initials;
+      document.getElementById('userName').textContent = data.name || data.email || 'User';
+      document.getElementById('mobileUserName').textContent = data.name || data.email || 'User';
+      document.getElementById('mobileUserRole').textContent = currentRole;
+      document.getElementById('userChip').style.display = 'flex';
+      document.getElementById('logoutBtn').style.display = 'inline-flex';
+
+      if (currentRole?.toLowerCase() === 'admin') {
+        document.getElementById('adminLink').style.display = '';
+        document.getElementById('mobileAdminLink').style.display = '';
+      }
+
+      document.getElementById('loadingState').style.display = 'none';
+
+      const roleLower = currentRole?.toLowerCase();
+      if (roleLower === 'lecturer' || roleLower === 'admin') {
+        document.getElementById('lecturerView').style.display = 'block';
+        initLecturerView();
+      } else if (roleLower === 'student') {
+        document.getElementById('studentView').style.display = 'block';
+        initStudentView();
+      } else {
+        document.getElementById('restrictedView').style.display = 'block';
+      }
+    });
+
+    /* ════════════════════════════════════
+       LECTURER / ADMIN VIEW
+    ════════════════════════════════════ */
+    async function initLecturerView() {
+      // Set default date
+      document.getElementById('markDateInput').value = todayStr();
+
+      // Fetch groups
+      let groupQuery = db.collection('groups');
+      if (currentRole?.toLowerCase() !== 'admin') {
+        groupQuery = groupQuery.where('createdBy', '==', currentUser.uid);
+      }
+      const groupSnap = await groupQuery.get();
+      myGroups = groupSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+      // Populate group selects
+      const markSel  = document.getElementById('markGroupSelect');
+      const recSel   = document.getElementById('filterGroup');
+      myGroups.forEach(g => {
+        const label = `${g.name}${g.subject ? ' – ' + g.subject : ''}`;
+        [markSel, recSel].forEach(sel => {
+          const opt = document.createElement('option');
+          opt.value = g.id;
+          opt.textContent = label;
+          sel.appendChild(opt);
+        });
+      });
+
+      // Group select change
+      markSel.addEventListener('change', onGroupSelect);
+
+      // Start records listener
+      startRecordsListener();
+
+      // Render group summary
+      renderGroupSummary();
+    }
+
+    async function onGroupSelect() {
+      const gid = document.getElementById('markGroupSelect').value;
+      if (!gid) {
+        document.getElementById('studentListWrap').style.display    = 'none';
+        document.getElementById('studentListEmpty').style.display   = 'none';
+        document.getElementById('studentListLoading').style.display = 'none';
+        return;
+      }
+      const group = myGroups.find(g => g.id === gid);
+      selectedGroupId   = gid;
+      selectedGroupName = group ? (group.name + (group.subject ? ' – '+group.subject:'')) : gid;
+
+      document.getElementById('studentListWrap').style.display    = 'none';
+      document.getElementById('studentListEmpty').style.display   = 'none';
+      document.getElementById('studentListLoading').style.display = 'block';
+
+      const members = group.members || [];
+      if (members.length === 0) {
+        document.getElementById('studentListLoading').style.display = 'none';
+        document.getElementById('studentListEmpty').style.display   = 'block';
+        return;
+      }
+
+      // Fetch users in batches of 10 (Firestore 'in' limit)
+      const batches = [];
+      for (let i = 0; i < members.length; i += 10) {
+        batches.push(members.slice(i, i+10));
+      }
+      studentsMap = {};
+      for (const batch of batches) {
+        const snap = await db.collection('users').where(firebase.firestore.FieldPath.documentId(), 'in', batch).get();
+        snap.forEach(d => { studentsMap[d.id] = d.data(); });
+      }
+
+      // Init statuses
+      studentStatuses = {};
+      members.forEach(uid => { studentStatuses[uid] = 'present'; });
+
+      renderStudentList(members);
+    }
+
+    function renderStudentList(members) {
+      document.getElementById('studentListLoading').style.display = 'none';
+      document.getElementById('studentListEmpty').style.display   = 'none';
+
+      const container = document.getElementById('studentList');
+      container.innerHTML = '';
+      document.getElementById('studentCountLabel').textContent = `${members.length} student${members.length !== 1 ? 's' : ''}`;
+
+      members.forEach(uid => {
+        const info = studentsMap[uid] || {};
+        const name = info.name || info.email || uid;
+        const initials = name.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+
+        const row = document.createElement('div');
+        row.className = 'student-row';
+        row.id = `row-${uid}`;
+        row.innerHTML = `
+          <div class="student-info">
+            <div class="student-avatar">${initials}</div>
+            <div>
+              <div class="student-name">${escHtml(name)}</div>
+              <div style="font-size:0.72rem;color:#9ca3af;">${uid.substring(0,10)}…</div>
+            </div>
+          </div>
+          <div class="toggle-wrap">
+            <span id="status-label-${uid}" style="font-size:0.8rem;font-weight:700;color:#10b981;">Present</span>
+            <button class="toggle-btn present" id="toggle-${uid}" onclick="toggleStudent('${uid}')" aria-label="Toggle attendance">
+              <div class="toggle-knob"></div>
+            </button>
+          </div>
+        `;
+        container.appendChild(row);
+      });
+
+      document.getElementById('studentListWrap').style.display = 'block';
+    }
+
+    function toggleStudent(uid) {
+      studentStatuses[uid] = studentStatuses[uid] === 'present' ? 'absent' : 'present';
+      updateToggleUI(uid);
+    }
+
+    function updateToggleUI(uid) {
+      const btn   = document.getElementById(`toggle-${uid}`);
+      const label = document.getElementById(`status-label-${uid}`);
+      if (!btn) return;
+      const isPresent = studentStatuses[uid] === 'present';
+      btn.className   = `toggle-btn ${isPresent ? 'present' : 'absent'}`;
+      label.textContent  = isPresent ? 'Present' : 'Absent';
+      label.style.color  = isPresent ? '#10b981' : '#ef4444';
+    }
+
+    function markAll(status) {
+      Object.keys(studentStatuses).forEach(uid => {
+        studentStatuses[uid] = status;
+        updateToggleUI(uid);
+      });
+    }
+
+    async function saveAttendance() {
+      const gid  = document.getElementById('markGroupSelect').value;
+      const date = document.getElementById('markDateInput').value;
+      if (!gid)  { showToast('Please select a group.', 'error'); return; }
+      if (!date) { showToast('Please select a date.', 'error'); return; }
+
+      const uids = Object.keys(studentStatuses);
+      if (uids.length === 0) { showToast('No students to save.', 'error'); return; }
+
+      const btn = document.getElementById('saveAttendanceBtn');
+      btn.disabled = true;
+      btn.querySelector('span').textContent = '⏳ Saving…';
+
+      try {
+        const batch = db.batch();
+        uids.forEach(uid => {
+          const info = studentsMap[uid] || {};
+          const docId = `${uid}_${gid}_${date}`;
+          const ref = db.collection('attendance').doc(docId);
+          batch.set(ref, {
+            studentId:   uid,
+            studentName: info.name || info.email || uid,
+            groupId:     gid,
+            groupName:   selectedGroupName,
+            date:        date,
+            status:      studentStatuses[uid],
+            markedBy:    currentUser.uid,
+            markedAt:    firebase.firestore.FieldValue.serverTimestamp()
+          });
+        });
+        await batch.commit();
+        showToast(`✅ Attendance saved for ${uids.length} student(s)!`, 'success');
+      } catch(e) {
+        console.error(e);
+        showToast('Error saving attendance: ' + e.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.querySelector('span').textContent = '💾 Save Attendance';
+      }
+    }
+
+    /* ── Records Listener ── */
+    function startRecordsListener() {
+      if (recordsListener) recordsListener();
+
+      let q = db.collection('attendance').orderBy('markedAt', 'desc').limit(50);
+      if (currentRole?.toLowerCase() !== 'admin') {
+        q = db.collection('attendance').where('markedBy', '==', currentUser.uid).orderBy('markedAt', 'desc').limit(50);
+      }
+
+      recordsListener = q.onSnapshot(snap => {
+        attendanceData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        applyRecordFilters();
+        renderGroupSummary();
+      }, err => console.error('Records listener error', err));
+    }
+
+    function applyRecordFilters() {
+      const dateF  = document.getElementById('filterDate').value;
+      const groupF = document.getElementById('filterGroup').value;
+
+      let filtered = attendanceData;
+      if (dateF)  filtered = filtered.filter(r => r.date === dateF);
+      if (groupF) filtered = filtered.filter(r => r.groupId === groupF);
+
+      renderRecordsTable(filtered);
+    }
+
+    function clearRecordFilters() {
+      document.getElementById('filterDate').value  = '';
+      document.getElementById('filterGroup').value = '';
+      applyRecordFilters();
+    }
+
+    function renderRecordsTable(records) {
+      const tbody = document.getElementById('recordsTbody');
+      const empty = document.getElementById('recordsEmpty');
+      if (records.length === 0) {
+        tbody.innerHTML = '';
+        empty.style.display = 'block';
+        return;
+      }
+      empty.style.display = 'none';
+      tbody.innerHTML = records.map(r => `
+        <tr>
+          <td><span style="font-weight:600;">${escHtml(r.groupName || r.groupId)}</span></td>
+          <td>${escHtml(r.date || '—')}</td>
+          <td>${escHtml(r.studentName || r.studentId)}</td>
+          <td>
+            <span class="badge ${r.status === 'present' ? 'badge-green' : 'badge-red'}">
+              ${r.status === 'present' ? '✅ Present' : '❌ Absent'}
+            </span>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    /* ── Group Summary ── */
+    function renderGroupSummary() {
+      const container = document.getElementById('groupSummaryList');
+      if (myGroups.length === 0) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-icon">📊</div><div class="empty-title">No groups yet</div><div class="empty-desc">Create a group to see attendance summary.</div></div>';
+        return;
+      }
+
+      // Build summary map
+      const summaryMap = {};
+      myGroups.forEach(g => {
+        summaryMap[g.id] = { name: g.name + (g.subject?' – '+g.subject:''), total: 0, present: 0 };
+      });
+      attendanceData.forEach(r => {
+        if (summaryMap[r.groupId]) {
+          summaryMap[r.groupId].total++;
+          if (r.status === 'present') summaryMap[r.groupId].present++;
+        }
+      });
+
+      container.innerHTML = Object.values(summaryMap).map(s => {
+        const pct = s.total > 0 ? Math.round((s.present / s.total) * 100) : 0;
+        const barClass = pct >= 75 ? 'green' : pct >= 50 ? 'yellow' : 'red';
+        const pctColor = pct >= 75 ? '#10b981' : pct >= 50 ? '#f59e0b' : '#ef4444';
+        return `
+          <div class="group-summary-item">
+            <div class="group-summary-top">
+              <span class="group-summary-name">${escHtml(s.name)}</span>
+              <span class="group-summary-pct" style="-webkit-text-fill-color:${pctColor};background:none;color:${pctColor};">${pct}%</span>
+            </div>
+            <div class="progress-bar-wrap">
+              <div class="progress-bar-fill ${barClass}" style="width:${pct}%"></div>
+            </div>
+            <div style="font-size:0.75rem;color:#9ca3af;margin-top:4px;">${s.present} present / ${s.total} total records</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    /* ════════════════════════════════════
+       STUDENT VIEW
+    ════════════════════════════════════ */
+    function initStudentView() {
+      if (stuListener) stuListener();
+
+      stuListener = db.collection('attendance')
+        .where('studentId', '==', currentUser.uid)
+        .orderBy('date', 'desc')
+        .onSnapshot(snap => {
+          stuAttendance = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+          renderStudentOverview();
+          populateStudentGroupFilter();
+          applyStudentFilters();
+        }, err => console.error('Student listener error', err));
+    }
+
+    function renderStudentOverview() {
+      const total   = stuAttendance.length;
+      const present = stuAttendance.filter(r => r.status === 'present').length;
+      const pct     = total > 0 ? Math.round((present / total) * 100) : 0;
+
+      // Circular progress
+      const circumference = 314; // 2π×50
+      const offset = circumference - (pct / 100) * circumference;
+      const strokeColor = pct >= 75 ? 'url(#circGrad)' : pct >= 50 ? '#f59e0b' : '#ef4444';
+
+      document.getElementById('overviewContent').innerHTML = `
+        <div style="display:flex;flex-wrap:wrap;gap:2rem;align-items:center;justify-content:center;">
+          <div class="circ-wrap">
+            <svg width="140" height="140" viewBox="0 0 120 120">
+              <defs>
+                <linearGradient id="circGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style="stop-color:#ec4899"/>
+                  <stop offset="50%" style="stop-color:#8b5cf6"/>
+                  <stop offset="100%" style="stop-color:#6366f1"/>
+                </linearGradient>
+              </defs>
+              <circle class="circ-track" cx="60" cy="60" r="50"/>
+              <circle class="circ-fill" cx="60" cy="60" r="50"
+                stroke="${pct >= 75 ? 'url(#circGrad)' : pct >= 50 ? '#f59e0b' : '#ef4444'}"
+                style="stroke-dashoffset:${offset}"/>
+            </svg>
+            <div class="circ-label">
+              <div class="circ-pct">${pct}%</div>
+              <div class="circ-sub">Overall</div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:0.75rem;">
+            <div class="stat-card" style="min-width:160px;">
+              <div class="stat-label">Classes Attended</div>
+              <div class="stat-value text-gradient">${present}</div>
+            </div>
+            <div class="stat-card" style="min-width:160px;">
+              <div class="stat-label">Total Classes</div>
+              <div class="stat-value">${total}</div>
+            </div>
+            <div class="stat-card" style="min-width:160px;">
+              <div class="stat-label">Absent</div>
+              <div class="stat-value" style="color:#ef4444;">${total - present}</div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Animate SVG circle
+      setTimeout(() => {
+        const circle = document.querySelector('.circ-fill');
+        if (circle) circle.style.strokeDashoffset = offset;
+      }, 100);
+
+      // Per-subject breakdown
+      const groups = {};
+      stuAttendance.forEach(r => {
+        if (!groups[r.groupId]) {
+          groups[r.groupId] = { name: r.groupName || r.groupId, total: 0, present: 0 };
+        }
+        groups[r.groupId].total++;
+        if (r.status === 'present') groups[r.groupId].present++;
+      });
+
+      const wrap = document.getElementById('subjectBreakdown');
+      const entries = Object.values(groups);
+      if (entries.length === 0) {
+        wrap.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-title">No attendance records yet</div></div>';
+        return;
+      }
+
+      wrap.innerHTML = entries.map(g => {
+        const p = g.total > 0 ? Math.round((g.present/g.total)*100) : 0;
+        const barClass = p >= 75 ? 'green' : p >= 50 ? 'yellow' : 'red';
+        const pColor   = p >= 75 ? '#10b981' : p >= 50 ? '#f59e0b' : '#ef4444';
+        return `
+          <div class="group-summary-item">
+            <div class="group-summary-top">
+              <span class="group-summary-name">${escHtml(g.name)}</span>
+              <span style="font-size:0.85rem;font-weight:800;color:${pColor};">${p}%</span>
+            </div>
+            <div class="progress-bar-wrap">
+              <div class="progress-bar-fill ${barClass}" style="width:${p}%"></div>
+            </div>
+            <div style="font-size:0.75rem;color:#9ca3af;margin-top:4px;">${g.present} present / ${g.total} total</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function populateStudentGroupFilter() {
+      const sel = document.getElementById('stuFilterGroup');
+      const current = sel.value;
+      const groups = {};
+      stuAttendance.forEach(r => {
+        if (!groups[r.groupId]) groups[r.groupId] = r.groupName || r.groupId;
+      });
+      sel.innerHTML = '<option value="">All Subjects</option>';
+      Object.entries(groups).forEach(([id, name]) => {
+        const opt = document.createElement('option');
+        opt.value = id;
+        opt.textContent = name;
+        sel.appendChild(opt);
+      });
+      sel.value = current;
+    }
+
+    function applyStudentFilters() {
+      const from   = document.getElementById('stuFilterFrom').value;
+      const to     = document.getElementById('stuFilterTo').value;
+      const grpF   = document.getElementById('stuFilterGroup').value;
+
+      let filtered = stuAttendance;
+      if (from)  filtered = filtered.filter(r => r.date >= from);
+      if (to)    filtered = filtered.filter(r => r.date <= to);
+      if (grpF)  filtered = filtered.filter(r => r.groupId === grpF);
+
+      renderStudentLog(filtered);
+    }
+
+    function clearStudentFilters() {
+      document.getElementById('stuFilterFrom').value  = '';
+      document.getElementById('stuFilterTo').value    = '';
+      document.getElementById('stuFilterGroup').value = '';
+      applyStudentFilters();
+    }
+
+    function renderStudentLog(records) {
+      const tbody = document.getElementById('stuLogTbody');
+      if (records.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;padding:2.5rem;color:#9ca3af;font-size:0.85rem;">No records match your filters.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = records.map(r => `
+        <tr>
+          <td>${escHtml(r.date || '—')}</td>
+          <td><span style="font-weight:600;">${escHtml(r.groupName || r.groupId)}</span></td>
+          <td>
+            <span class="badge ${r.status === 'present' ? 'badge-green' : 'badge-red'}">
+              ${r.status === 'present' ? '✅ Present' : '❌ Absent'}
+            </span>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    /* ── Utility ── */
+    function escHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+  </script>
+  <script src="js/site-nav.js"></script>
+</body>
+</html>
+
+

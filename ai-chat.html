@@ -1,0 +1,1614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Assistant – Sri Aurobindo College BCA</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { darkMode: 'class' };</script>
+
+  <!-- Firebase Compat SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
+
+  <style>
+    /* ═══════════ RESET & FONTS ═══════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --pink:   #ec4899;
+      --indigo: #6366f1;
+      --violet: #8b5cf6;
+      --grad:   linear-gradient(135deg, #ec4899 0%, #8b5cf6 50%, #6366f1 100%);
+      --grad-h: linear-gradient(135deg, #db2777 0%, #7c3aed 50%, #4f46e5 100%);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      background-color: #f9fafb;
+      color: #111827;
+      transition: background-color 0.4s ease, color 0.4s ease;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+
+    html.dark body {
+      background-color: #000000;
+      color: #f9fafb;
+    }
+
+    /* Dark mode toggle button */
+    #darkToggle {
+      position: fixed;
+      top: 1rem; right: 1rem;
+      z-index: 999;
+      width: 42px; height: 42px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      background: #ffffff;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.06);
+      transition: background 0.3s, box-shadow 0.3s, transform 0.2s;
+      outline: none;
+    }
+    #darkToggle:hover {
+      transform: scale(1.08);
+      box-shadow: 0 4px 18px rgba(0,0,0,0.16);
+    }
+    html.dark #darkToggle {
+      background: #1f2937;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06);
+    }
+
+    /* Layout wrapper */
+    .page-wrap {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1.5rem 1rem;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* College header */
+    .college-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.55rem;
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+    .logo-badge {
+      width: 64px; height: 64px;
+      border-radius: 16px;
+      background: var(--grad);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 800;
+      font-size: 1.4rem;
+      color: #fff;
+      letter-spacing: 1px;
+      box-shadow: 0 8px 24px rgba(139,92,246,0.35), 0 2px 8px rgba(236,72,153,0.2);
+      position: relative;
+      flex-shrink: 0;
+    }
+    .logo-badge::after {
+      content: '';
+      position: absolute;
+      top: 6px; left: 8px;
+      width: 40%; height: 30%;
+      background: rgba(255,255,255,0.25);
+      border-radius: 6px;
+      filter: blur(2px);
+    }
+    .college-name {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #111827;
+      line-height: 1.2;
+      letter-spacing: -0.01em;
+    }
+    html.dark .college-name { color: #f9fafb; }
+    .college-dept {
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      background: var(--grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Cards */
+    .card {
+      background: #ffffff;
+      border-radius: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.04);
+      transition: background 0.4s ease, box-shadow 0.4s ease;
+      overflow: hidden;
+    }
+    html.dark .card {
+      background: #111827;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.4), 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05);
+    }
+    .card-accent {
+      height: 3px;
+      background: var(--grad);
+      width: 100%;
+    }
+
+    /* Buttons */
+    .btn-primary {
+      width: 100%;
+      height: 48px;
+      border: none;
+      border-radius: 12px;
+      background: var(--grad);
+      color: #fff;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(139,92,246,0.35);
+      transition: box-shadow 0.25s, transform 0.15s;
+      outline: none;
+    }
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--grad-h);
+      opacity: 0;
+      transition: opacity 0.25s;
+    }
+    .btn-primary:hover::before { opacity: 1; }
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(139,92,246,0.4);
+    }
+    .btn-primary:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 8px rgba(139,92,246,0.3);
+    }
+    .btn-primary:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .btn-primary span { position: relative; z-index: 1; }
+
+    .btn-secondary {
+      width: 100%;
+      height: 46px;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 12px;
+      background: #fff;
+      color: #374151;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: background 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+      outline: none;
+    }
+    .btn-secondary:hover {
+      background: #f9fafb;
+      border-color: #d1d5db;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+      transform: translateY(-1px);
+    }
+    .btn-secondary:active { transform: translateY(0); }
+    html.dark .btn-secondary {
+      background: #1f2937;
+      border-color: #374151;
+      color: #e5e7eb;
+    }
+    html.dark .btn-secondary:hover {
+      background: #111827;
+      border-color: #4b5563;
+    }
+
+    /* Form inputs */
+    .field { margin-bottom: 1rem; }
+    .field-label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #374151;
+      margin-bottom: 5px;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+    html.dark .field-label { color: #9ca3af; }
+
+    .input-wrap { position: relative; }
+    .input-icon {
+      position: absolute;
+      left: 13px; top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.95rem;
+      pointer-events: none;
+      opacity: 0.55;
+    }
+    .form-input, .form-select {
+      width: 100%;
+      height: 46px;
+      padding: 0 14px 0 40px;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 12px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: #111827;
+      background: #f9fafb;
+      outline: none;
+      transition: border-color 0.25s, background 0.25s, box-shadow 0.25s;
+    }
+    .form-input::placeholder { color: #9ca3af; font-weight: 400; }
+    .form-input:focus, .form-select:focus {
+      border-color: #8b5cf6;
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(139,92,246,0.12);
+    }
+    html.dark .form-input, html.dark .form-select {
+      background: #1f2937;
+      border-color: #374151;
+      color: #f9fafb;
+    }
+    html.dark .form-input::placeholder { color: #4b5563; }
+    html.dark .form-input:focus, html.dark .form-select:focus {
+      border-color: #8b5cf6;
+      background: #111827;
+      box-shadow: 0 0 0 3px rgba(139,92,246,0.18);
+    }
+    .form-select {
+      appearance: none;
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 2.5rem;
+    }
+
+    /* Utility classes */
+    .flex-center { display: flex; align-items: center; justify-content: center; }
+    .text-gradient {
+      background: var(--grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ═══════════ NAVBAR ═══════════ */
+    .navbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 900;
+      height: 64px;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(0,0,0,0.07);
+      display: flex;
+      align-items: center;
+      padding: 0 1.25rem;
+      gap: 0.75rem;
+      box-shadow: 0 1px 12px rgba(0,0,0,0.06);
+      transition: background 0.4s ease;
+    }
+    html.dark .navbar {
+      background: rgba(17,24,39,0.94);
+      border-bottom-color: rgba(255,255,255,0.06);
+      box-shadow: 0 1px 12px rgba(0,0,0,0.4);
+    }
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+    .nav-logo {
+      width: 38px; height: 38px;
+      border-radius: 10px;
+      background: var(--grad);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 800;
+      font-size: 0.88rem;
+      color: #fff;
+      letter-spacing: 0.5px;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(139,92,246,0.3);
+    }
+    .nav-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 700;
+      font-size: 0.88rem;
+      color: #111827;
+      line-height: 1.15;
+      max-width: 130px;
+    }
+    html.dark .nav-title { color: #f9fafb; }
+    .nav-subtitle {
+      font-size: 0.65rem;
+      font-weight: 500;
+      color: #6b7280;
+      letter-spacing: 0.04em;
+    }
+    html.dark .nav-subtitle { color: #9ca3af; }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 0.15rem;
+      flex: 1;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      padding: 0 0.5rem;
+    }
+    .nav-links::-webkit-scrollbar { display: none; }
+    .nav-link {
+      white-space: nowrap;
+      padding: 0.38rem 0.7rem;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #4b5563;
+      text-decoration: none;
+      transition: background 0.2s, color 0.2s;
+      flex-shrink: 0;
+    }
+    .nav-link:hover {
+      background: #f3f4f6;
+      color: #111827;
+    }
+    html.dark .nav-link { color: #9ca3af; }
+    html.dark .nav-link:hover {
+      background: #1f2937;
+      color: #f9fafb;
+    }
+    .nav-link.active {
+      background: var(--grad);
+      color: #fff !important;
+      box-shadow: 0 2px 8px rgba(139,92,246,0.3);
+    }
+    html.dark .nav-link.active { color: #fff !important; }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      flex-shrink: 0;
+    }
+    .user-chip {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.3rem 0.7rem 0.3rem 0.3rem;
+      background: #f3f4f6;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: background 0.2s;
+      max-width: 180px;
+    }
+    .user-chip:hover { background: #e5e7eb; }
+    html.dark .user-chip { background: #1f2937; }
+    html.dark .user-chip:hover { background: #374151; }
+    .user-avatar {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: var(--grad);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .user-name {
+      font-size: 0.76rem;
+      font-weight: 600;
+      color: #374151;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100px;
+    }
+    html.dark .user-name { color: #d1d5db; }
+    .btn-logout {
+      height: 34px;
+      padding: 0 0.85rem;
+      border: 1.5px solid #fecaca;
+      border-radius: 8px;
+      background: #fff5f5;
+      color: #ef4444;
+      font-size: 0.76rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s, transform 0.15s;
+      white-space: nowrap;
+    }
+    .btn-logout:hover {
+      background: #fee2e2;
+      border-color: #f87171;
+      transform: translateY(-1px);
+    }
+    html.dark .btn-logout {
+      background: rgba(239,68,68,0.08);
+      border-color: rgba(239,68,68,0.25);
+      color: #f87171;
+    }
+    html.dark .btn-logout:hover {
+      background: rgba(239,68,68,0.15);
+      border-color: rgba(239,68,68,0.4);
+    }
+
+    /* Hamburger */
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 4.5px;
+      cursor: pointer;
+      padding: 6px;
+      border: none;
+      background: transparent;
+      border-radius: 8px;
+      flex-shrink: 0;
+      transition: background 0.2s;
+    }
+    .hamburger:hover { background: #f3f4f6; }
+    html.dark .hamburger:hover { background: #1f2937; }
+    .hamburger span {
+      display: block;
+      width: 22px; height: 2px;
+      background: #374151;
+      border-radius: 2px;
+      transition: transform 0.3s, opacity 0.3s;
+    }
+    html.dark .hamburger span { background: #d1d5db; }
+
+    /* Mobile menu overlay */
+    .mobile-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 800;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .mobile-overlay.open { opacity: 1; }
+    .mobile-menu {
+      position: fixed;
+      top: 0; right: 0;
+      height: 100vh;
+      width: 290px;
+      background: #fff;
+      z-index: 850;
+      transform: translateX(100%);
+      transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+      display: flex;
+      flex-direction: column;
+      padding: 1.5rem;
+      gap: 0.35rem;
+      overflow-y: auto;
+      box-shadow: -4px 0 32px rgba(0,0,0,0.12);
+    }
+    html.dark .mobile-menu {
+      background: #111827;
+      box-shadow: -4px 0 32px rgba(0,0,0,0.5);
+    }
+    .mobile-menu.open { transform: translateX(0); }
+    .mobile-menu-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    html.dark .mobile-menu-header { border-bottom-color: #1f2937; }
+    .mobile-close {
+      width: 34px; height: 34px;
+      border: none; background: #f3f4f6;
+      border-radius: 8px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; color: #374151;
+      transition: background 0.2s;
+    }
+    html.dark .mobile-close { background: #1f2937; color: #d1d5db; }
+    .mobile-close:hover { background: #e5e7eb; }
+    html.dark .mobile-close:hover { background: #374151; }
+    .mobile-nav-link {
+      display: block;
+      padding: 0.65rem 0.9rem;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #374151;
+      text-decoration: none;
+      transition: background 0.2s, color 0.2s;
+    }
+    .mobile-nav-link:hover { background: #f3f4f6; color: #111827; }
+    html.dark .mobile-nav-link { color: #9ca3af; }
+    html.dark .mobile-nav-link:hover { background: #1f2937; color: #f9fafb; }
+    .mobile-nav-link.active {
+      background: var(--grad);
+      color: #fff !important;
+    }
+    .mobile-user-info {
+      margin-top: auto;
+      padding-top: 1rem;
+      border-top: 1px solid #f3f4f6;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    html.dark .mobile-user-info { border-top-color: #1f2937; }
+
+    /* ═══════════ TOAST ═══════════ */
+    #toast-container {
+      position: fixed;
+      top: 76px;
+      right: 1rem;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      pointer-events: none;
+    }
+    .toast {
+      min-width: 280px;
+      max-width: 380px;
+      background: #fff;
+      border-radius: 14px;
+      padding: 0.85rem 1.1rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.7rem;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.05);
+      pointer-events: all;
+      animation: toastIn 0.35s cubic-bezier(0.4,0,0.2,1) forwards;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: #374151;
+      line-height: 1.4;
+    }
+    html.dark .toast {
+      background: #1f2937;
+      color: #e5e7eb;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.06);
+    }
+    .toast-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 0.05rem; }
+    .toast.success { border-left: 4px solid #10b981; }
+    .toast.error   { border-left: 4px solid #ef4444; }
+    .toast.info    { border-left: 4px solid #6366f1; }
+    .toast.warning { border-left: 4px solid #f59e0b; }
+    .toast.out { animation: toastOut 0.3s cubic-bezier(0.4,0,0.2,1) forwards; }
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateX(32px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes toastOut {
+      from { opacity: 1; transform: translateX(0); }
+      to   { opacity: 0; transform: translateX(32px); }
+    }
+
+    /* ═══════════ FOOTER ═══════════ */
+    .footer {
+      margin-top: 3rem;
+      text-align: center;
+      font-size: 0.78rem;
+      color: #9ca3af;
+      padding-bottom: 1.5rem;
+      line-height: 1.6;
+    }
+    html.dark .footer { color: #4b5563; }
+
+    /* ═══════════ PAGE HEADER ═══════════ */
+    .page-header {
+      text-align: center;
+      margin-bottom: 2rem;
+      padding-top: 0.5rem;
+    }
+    .page-header h1 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: #111827;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.4rem;
+    }
+    html.dark .page-header h1 { color: #f9fafb; }
+    .page-header p {
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: #6b7280;
+    }
+    html.dark .page-header p { color: #9ca3af; }
+
+    /* ═══════════ CHAT INTERFACE ═══════════ */
+    .chat-container {
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 260px);
+      min-height: 480px;
+    }
+
+    .chat-card {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #ffffff;
+      border-radius: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.04);
+      overflow: hidden;
+      transition: background 0.4s ease, box-shadow 0.4s ease;
+    }
+    html.dark .chat-card {
+      background: #111827;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.4), 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05);
+    }
+
+    .chat-header {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid #f3f4f6;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    html.dark .chat-header { border-bottom-color: #1f2937; }
+
+    .chat-header-left {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .bot-avatar-large {
+      width: 42px; height: 42px;
+      border-radius: 12px;
+      background: var(--grad);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(139,92,246,0.3);
+    }
+    .chat-header-info h3 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #111827;
+    }
+    html.dark .chat-header-info h3 { color: #f9fafb; }
+    .chat-header-info p {
+      font-size: 0.72rem;
+      color: #6b7280;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    html.dark .chat-header-info p { color: #9ca3af; }
+    .status-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #10b981;
+      flex-shrink: 0;
+      box-shadow: 0 0 0 2px rgba(16,185,129,0.2);
+      animation: pulse-green 2s infinite;
+    }
+    @keyframes pulse-green {
+      0%, 100% { box-shadow: 0 0 0 2px rgba(16,185,129,0.2); }
+      50% { box-shadow: 0 0 0 5px rgba(16,185,129,0.1); }
+    }
+
+    .btn-clear-chat {
+      height: 34px;
+      padding: 0 0.85rem;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 8px;
+      background: transparent;
+      color: #6b7280;
+      font-size: 0.76rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.15s;
+      white-space: nowrap;
+    }
+    .btn-clear-chat:hover {
+      background: #fee2e2;
+      border-color: #fca5a5;
+      color: #ef4444;
+      transform: translateY(-1px);
+    }
+    html.dark .btn-clear-chat {
+      border-color: #374151;
+      color: #9ca3af;
+    }
+    html.dark .btn-clear-chat:hover {
+      background: rgba(239,68,68,0.1);
+      border-color: rgba(239,68,68,0.3);
+      color: #f87171;
+    }
+
+    /* Messages area */
+    .messages-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      background: #f8f9fb;
+      scrollbar-width: thin;
+      scrollbar-color: #e5e7eb transparent;
+    }
+    html.dark .messages-area {
+      background: #0d1117;
+      scrollbar-color: #374151 transparent;
+    }
+    .messages-area::-webkit-scrollbar { width: 5px; }
+    .messages-area::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 10px; }
+    html.dark .messages-area::-webkit-scrollbar-thumb { background: #374151; }
+
+    /* Welcome card */
+    .welcome-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 1rem;
+      padding: 2.5rem 2rem;
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.06);
+      margin: 1rem auto;
+      max-width: 480px;
+      width: 100%;
+      animation: fadeInUp 0.5s ease forwards;
+    }
+    html.dark .welcome-card {
+      background: #1a2233;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.4);
+    }
+    .welcome-icon {
+      width: 64px; height: 64px;
+      border-radius: 18px;
+      background: var(--grad);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      box-shadow: 0 8px 24px rgba(139,92,246,0.3);
+    }
+    .welcome-card h3 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #111827;
+    }
+    html.dark .welcome-card h3 { color: #f9fafb; }
+    .welcome-card p {
+      font-size: 0.88rem;
+      color: #6b7280;
+      line-height: 1.6;
+    }
+    html.dark .welcome-card p { color: #9ca3af; }
+
+    .quick-prompts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+      margin-top: 0.25rem;
+    }
+    .quick-prompt-btn {
+      padding: 0.4rem 0.8rem;
+      border-radius: 20px;
+      border: 1.5px solid #e5e7eb;
+      background: #f9fafb;
+      color: #6366f1;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .quick-prompt-btn:hover {
+      background: var(--grad);
+      border-color: transparent;
+      color: #fff;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(139,92,246,0.25);
+    }
+    html.dark .quick-prompt-btn {
+      background: #1f2937;
+      border-color: #374151;
+      color: #818cf8;
+    }
+
+    /* Message bubbles */
+    .message-row {
+      display: flex;
+      gap: 0.65rem;
+      animation: fadeInUp 0.3s ease forwards;
+    }
+    .message-row.user {
+      flex-direction: row-reverse;
+    }
+    .bot-avatar-small {
+      width: 32px; height: 32px;
+      border-radius: 10px;
+      background: var(--grad);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.95rem;
+      flex-shrink: 0;
+      align-self: flex-end;
+      box-shadow: 0 2px 8px rgba(139,92,246,0.25);
+    }
+
+    .bubble-wrap {
+      display: flex;
+      flex-direction: column;
+      max-width: 75%;
+      gap: 0.25rem;
+    }
+    .message-row.user .bubble-wrap { align-items: flex-end; }
+    .message-row.bot .bubble-wrap { align-items: flex-start; }
+
+    .bubble {
+      padding: 0.75rem 1rem;
+      border-radius: 18px;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      word-break: break-word;
+      position: relative;
+    }
+    .bubble.user-bubble {
+      background: var(--grad);
+      color: #fff;
+      border-bottom-right-radius: 4px;
+      box-shadow: 0 4px 16px rgba(139,92,246,0.3);
+    }
+    .bubble.bot-bubble {
+      background: #fff;
+      color: #1f2937;
+      border-bottom-left-radius: 4px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.06);
+      border: 1px solid rgba(0,0,0,0.05);
+    }
+    html.dark .bubble.bot-bubble {
+      background: #1f2937;
+      color: #e5e7eb;
+      border-color: rgba(255,255,255,0.06);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    .msg-time {
+      font-size: 0.67rem;
+      color: #9ca3af;
+      padding: 0 0.25rem;
+    }
+    html.dark .msg-time { color: #4b5563; }
+    .message-row.user .msg-time { text-align: right; }
+
+    /* Typing indicator */
+    .typing-indicator {
+      display: flex;
+      gap: 0.65rem;
+      animation: fadeInUp 0.3s ease forwards;
+    }
+    .typing-dots {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 0.75rem 1rem;
+      background: #fff;
+      border-radius: 18px;
+      border-bottom-left-radius: 4px;
+      border: 1px solid rgba(0,0,0,0.05);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    html.dark .typing-dots {
+      background: #1f2937;
+      border-color: rgba(255,255,255,0.06);
+    }
+    .typing-dots span {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #8b5cf6;
+      animation: typingBounce 1.2s ease-in-out infinite;
+    }
+    .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes typingBounce {
+      0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+      30% { transform: translateY(-6px); opacity: 1; }
+    }
+
+    /* Input area */
+    .input-area {
+      padding: 1rem 1.25rem;
+      border-top: 1px solid #f3f4f6;
+      display: flex;
+      gap: 0.75rem;
+      align-items: flex-end;
+      flex-shrink: 0;
+      background: #fff;
+    }
+    html.dark .input-area {
+      background: #111827;
+      border-top-color: #1f2937;
+    }
+
+    .chat-input-wrap {
+      flex: 1;
+      position: relative;
+    }
+    .chat-input {
+      width: 100%;
+      min-height: 48px;
+      max-height: 120px;
+      padding: 0.75rem 1rem;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 14px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: #111827;
+      background: #f9fafb;
+      outline: none;
+      resize: none;
+      overflow-y: auto;
+      transition: border-color 0.25s, background 0.25s, box-shadow 0.25s;
+      line-height: 1.5;
+      display: block;
+    }
+    .chat-input::placeholder { color: #9ca3af; font-weight: 400; }
+    .chat-input:focus {
+      border-color: #8b5cf6;
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(139,92,246,0.12);
+    }
+    html.dark .chat-input {
+      background: #1f2937;
+      border-color: #374151;
+      color: #f9fafb;
+    }
+    html.dark .chat-input::placeholder { color: #4b5563; }
+    html.dark .chat-input:focus {
+      border-color: #8b5cf6;
+      background: #111827;
+      box-shadow: 0 0 0 3px rgba(139,92,246,0.18);
+    }
+    .chat-input:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .btn-send {
+      width: 48px; height: 48px;
+      border: none;
+      border-radius: 14px;
+      background: var(--grad);
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 4px 16px rgba(139,92,246,0.35);
+      transition: box-shadow 0.25s, transform 0.15s, opacity 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-send::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--grad-h);
+      opacity: 0;
+      transition: opacity 0.25s;
+    }
+    .btn-send:hover::before { opacity: 1; }
+    .btn-send:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 20px rgba(139,92,246,0.4);
+    }
+    .btn-send:active { transform: translateY(0); }
+    .btn-send:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .btn-send svg, .btn-send .send-icon { position: relative; z-index: 1; }
+
+    /* Spinner */
+    .spinner {
+      width: 18px; height: 18px;
+      border: 2.5px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Animations */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Auth loading */
+    #authLoading {
+      position: fixed;
+      inset: 0;
+      background: #f9fafb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    html.dark #authLoading { background: #000; }
+    .auth-spinner {
+      width: 44px; height: 44px;
+      border: 3px solid #e5e7eb;
+      border-top-color: #8b5cf6;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    html.dark .auth-spinner { border-color: #374151; border-top-color: #8b5cf6; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .hamburger { display: flex; }
+      .nav-links { display: none; }
+      .nav-right .user-chip { display: none; }
+      .nav-right .btn-logout { display: none; }
+      .page-header h1 { font-size: 1.7rem; }
+      .chat-container {
+        height: calc(100vh - 200px);
+        min-height: 400px;
+      }
+      .bubble-wrap { max-width: 88%; }
+    }
+    @media (min-width: 769px) {
+      .mobile-overlay, .mobile-menu { display: none !important; }
+    }
+    @media (max-width: 480px) {
+      .quick-prompts { flex-direction: column; align-items: center; }
+      .quick-prompt-btn { width: 100%; max-width: 280px; text-align: center; }
+    }
+  </style>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+
+<body>
+  <!-- Auth Loading -->
+  <div id="authLoading">
+    <div class="auth-spinner"></div>
+    <p style="font-size:0.85rem;color:#9ca3af;font-weight:500;">Checking authentication…</p>
+  </div>
+
+  <!-- Dark Mode Toggle -->
+  <button id="darkToggle" title="Toggle dark mode" aria-label="Toggle dark mode">🌙</button>
+
+  <!-- Toast Container -->
+  <div id="toast-container"></div>
+
+  <!-- Mobile Overlay -->
+  <div class="mobile-overlay" id="mobileOverlay" onclick="closeMobileMenu()"></div>
+
+  <!-- Mobile Menu -->
+  <div class="mobile-menu" id="mobileMenu">
+    <div class="mobile-menu-header">
+      <div style="display:flex;align-items:center;gap:0.5rem;">
+        <div class="nav-logo" style="width:32px;height:32px;font-size:0.78rem;">SAC</div>
+        <span style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:0.88rem;color:#111827;" class="college-name-m">BCA Dept</span>
+      </div>
+      <button class="mobile-close" onclick="closeMobileMenu()">✕</button>
+    </div>
+    <a href="Home.html" class="mobile-nav-link">🏠 Home</a>
+    <a href="resources.html" class="mobile-nav-link">📚 Resources</a>
+    <a href="upload.html" class="mobile-nav-link">⬆️ Upload</a>
+    <a href="profile.html" class="mobile-nav-link">👤 Profile</a>
+    <a href="events.html" class="mobile-nav-link">🎉 Events</a>
+    <a href="Home.html" class="mobile-nav-link">🏫 Campus Hub</a>
+    <a href="about.html" class="mobile-nav-link">ℹ️ About</a>
+    <a href="gallery.html" class="mobile-nav-link">🖼️ Gallery</a>
+    <a href="notifications.html" class="mobile-nav-link">🔔 Notifications</a>
+    <a href="assignments.html" class="mobile-nav-link">📝 Assignments</a>
+    <a href="students-hub.html" class="mobile-nav-link">🎓 Students Hub</a>
+    <a href="lecturers-hub.html" class="mobile-nav-link">👨‍🏫 Lecturers Hub</a>
+    <a href="online-test.html" class="mobile-nav-link">🧪 Online Tests</a>
+    <a href="attendance.html" class="mobile-nav-link">✅ Attendance</a>
+    <a href="ai-chat.html" class="mobile-nav-link active">🤖 AI Chat</a>
+    <a href="admin.html" class="mobile-nav-link" id="mobileAdminLink" style="display:none;">🛡️ Admin</a>
+    <div class="mobile-user-info">
+      <div style="display:flex;align-items:center;gap:0.6rem;">
+        <div class="user-avatar" id="mobileUserAvatar" style="width:36px;height:36px;font-size:0.8rem;">U</div>
+        <div>
+          <div style="font-size:0.85rem;font-weight:700;color:#111827;" class="mobile-user-name" id="mobileUserName">Loading…</div>
+          <div style="font-size:0.72rem;color:#6b7280;" id="mobileUserRole">—</div>
+        </div>
+      </div>
+      <button class="btn-logout" style="width:100%;height:40px;" onclick="handleLogout()">🚪 Logout</button>
+    </div>
+  </div>
+
+  <!-- Navbar -->
+  <nav class="navbar" id="mainNavbar">
+    <a href="Home.html" class="nav-brand">
+      <div class="nav-logo">SAC</div>
+      <div>
+        <div class="nav-title">Sri Aurobindo</div>
+        <div class="nav-subtitle">BCA Department</div>
+      </div>
+    </a>
+
+    <div class="nav-links" id="navLinks">
+      <a href="Home.html" class="nav-link">Home</a>
+      <a href="resources.html" class="nav-link">Resources</a>
+      <a href="upload.html" class="nav-link">Upload</a>
+      <a href="profile.html" class="nav-link">Profile</a>
+      <a href="events.html" class="nav-link">Events</a>
+      <a href="Home.html" class="nav-link">Campus Hub</a>
+      <a href="about.html" class="nav-link">About</a>
+      <a href="gallery.html" class="nav-link">Gallery</a>
+      <a href="notifications.html" class="nav-link">Notifications</a>
+      <a href="assignments.html" class="nav-link">Assignments</a>
+      <a href="students-hub.html" class="nav-link">Students Hub</a>
+      <a href="lecturers-hub.html" class="nav-link">Lecturers Hub</a>
+      <a href="online-test.html" class="nav-link">Online Tests</a>
+      <a href="attendance.html" class="nav-link">Attendance</a>
+      <a href="ai-chat.html" class="nav-link active">AI Chat</a>
+      <a href="admin.html" class="nav-link" id="adminNavLink" style="display:none;">Admin</a>
+    </div>
+
+    <div class="nav-right">
+      <div class="user-chip" id="userChip">
+        <div class="user-avatar" id="navUserAvatar">U</div>
+        <span class="user-name" id="navUserName">Loading…</span>
+      </div>
+      <button class="btn-logout" id="logoutBtn" style="display:none;" onclick="handleLogout()">Logout</button>
+      <button class="hamburger" id="hamburger" onclick="openMobileMenu()" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main style="padding-top: 80px; min-height: 100vh;">
+    <div class="page-wrap">
+
+      <!-- Page Header -->
+      <div class="page-header">
+        <h1>🤖 AI Assistant</h1>
+        <p class="text-gradient" style="font-weight:600;">Your personalised campus chatbot — answers vanish when you leave</p>
+      </div>
+
+      <!-- Chat Container -->
+      <div class="chat-container">
+        <div class="chat-card">
+
+          <!-- Chat Header -->
+          <div class="chat-header">
+            <div class="chat-header-left">
+              <div class="bot-avatar-large">🤖</div>
+              <div class="chat-header-info">
+                <h3>BCA Assistant</h3>
+                <p>
+                  <span class="status-dot"></span>
+                  Online · Powered by Gemini
+                </p>
+              </div>
+            </div>
+            <button class="btn-clear-chat" onclick="clearChat()" title="Clear all messages">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6l-1 14H6L5 6"></path>
+                <path d="M10 11v6M14 11v6"></path>
+                <path d="M9 6V4h6v2"></path>
+              </svg>
+              Clear Chat
+            </button>
+          </div>
+
+          <!-- Messages Area -->
+          <div class="messages-area" id="messagesArea">
+            <!-- Welcome card shown by default -->
+            <div class="welcome-card" id="welcomeCard">
+              <div class="welcome-icon">🤖</div>
+              <h3>Hello! I'm your BCA Assistant.</h3>
+              <p>Ask me anything about your courses, exams, resources, or college events. I'm here to help you succeed!</p>
+              <div class="quick-prompts">
+                <button class="quick-prompt-btn" onclick="sendQuickPrompt('What are the BCA course subjects?')">📚 BCA Subjects</button>
+                <button class="quick-prompt-btn" onclick="sendQuickPrompt('How should I prepare for semester exams?')">📝 Exam Tips</button>
+                <button class="quick-prompt-btn" onclick="sendQuickPrompt('What programming languages should BCA students learn?')">💻 Programming</button>
+                <button class="quick-prompt-btn" onclick="sendQuickPrompt('Tell me about career options after BCA')">🎓 Career Paths</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Input Area -->
+          <div class="input-area">
+            <div class="chat-input-wrap">
+              <textarea
+                id="chatInput"
+                class="chat-input"
+                placeholder="Type your question here…"
+                rows="1"
+                onkeydown="handleInputKeydown(event)"
+                oninput="autoResizeTextarea(this)"
+              ></textarea>
+            </div>
+            <button class="btn-send" id="sendBtn" onclick="sendMessage()" title="Send message">
+              <svg class="send-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+              </svg>
+            </button>
+          </div>
+
+        </div><!-- /chat-card -->
+      </div><!-- /chat-container -->
+
+      <!-- Footer -->
+      <div class="footer">
+        <p>🤖 AI Assistant · Sri Aurobindo College – BCA Department</p>
+        <p style="margin-top:0.2rem;">Powered by Google Gemini · Session-based (messages are not saved)</p>
+      </div>
+
+    </div><!-- /page-wrap -->
+  </main>
+
+  <!-- ═══════════ JAVASCRIPT ═══════════ -->
+  <script>
+    // ─── Firebase Config ───────────────────────────────────────────────────────
+    const firebaseConfig = {
+      apiKey: "AIzaSyCX5g8sPw_iG0HMujrZM8dG7w510c6jpC4",
+      authDomain: "campus-hub-2220b.firebaseapp.com",
+      projectId: "campus-hub-2220b",
+      storageBucket: "campus-hub-2220b.firebasestorage.app",
+      messagingSenderId: "371742140259",
+      appId: "1:371742140259:web:55a2b29fd269689abb5556"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db   = firebase.firestore();
+
+    // ─── Gemini API Config ─────────────────────────────────────────────────────
+    const GEMINI_API_KEY = "AIzaSyDQPP7oMJaaZYkflMjt2bDLkd0rmDPDiIw";
+    const GEMINI_MODEL     = "gemini-2.0-flash";
+    const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+    const SYSTEM_PROMPT    = "You are a helpful assistant for students and faculty of Sri Aurobindo College, BCA Department. Keep answers concise, friendly, and academic. Focus on topics like programming, computer science, BCA curriculum, exams, college events, and career guidance. Format your responses with proper line breaks for readability.";
+
+    // ─── State ─────────────────────────────────────────────────────────────────
+    let messages        = [];   // session-only, not persisted
+    let isWaiting       = false;
+    let currentUser     = null;
+    let currentUserData = null;
+
+    // ─── Dark Mode ─────────────────────────────────────────────────────────────
+    const darkToggle = document.getElementById('darkToggle');
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+      darkToggle.textContent = '☀️';
+    }
+    darkToggle.addEventListener('click', () => {
+      const isDark = document.documentElement.classList.toggle('dark');
+      darkToggle.textContent = isDark ? '☀️' : '🌙';
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    });
+
+    // ─── Mobile Menu ───────────────────────────────────────────────────────────
+    function openMobileMenu() {
+      document.getElementById('mobileOverlay').style.display = 'block';
+      setTimeout(() => {
+        document.getElementById('mobileOverlay').classList.add('open');
+        document.getElementById('mobileMenu').classList.add('open');
+      }, 10);
+      document.body.style.overflow = 'hidden';
+    }
+    function closeMobileMenu() {
+      document.getElementById('mobileOverlay').classList.remove('open');
+      document.getElementById('mobileMenu').classList.remove('open');
+      setTimeout(() => {
+        document.getElementById('mobileOverlay').style.display = 'none';
+      }, 350);
+      document.body.style.overflow = '';
+    }
+
+    // ─── Toast ─────────────────────────────────────────────────────────────────
+    function showToast(msg, type = 'info', duration = 4000) {
+      const icons = { success: '✅', error: '❌', info: 'ℹ️', warning: '⚠️' };
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.innerHTML = `<span class="toast-icon">${icons[type] || 'ℹ️'}</span><span>${msg}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.classList.add('out');
+        setTimeout(() => toast.remove(), 300);
+      }, duration);
+    }
+
+    // ─── Auth ──────────────────────────────────────────────────────────────────
+    auth.onAuthStateChanged(async (user) => {
+      const loader = document.getElementById('authLoading');
+      if (!user) {
+        window.location.href = 'index.html';
+        return;
+      }
+      currentUser = user;
+      try {
+        const snap = await db.collection('users').doc(user.uid).get();
+        currentUserData = snap.exists ? snap.data() : {};
+      } catch (e) {
+        currentUserData = {};
+      }
+      const displayName = currentUserData.name || user.displayName || user.email?.split('@')[0] || 'User';
+      const role        = currentUserData.role || 'Student';
+      const initials    = displayName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+
+      // Navbar
+      document.getElementById('navUserName').textContent    = displayName;
+      document.getElementById('navUserAvatar').textContent  = initials;
+      document.getElementById('mobileUserName').textContent = displayName;
+      document.getElementById('mobileUserAvatar').textContent = initials;
+      document.getElementById('mobileUserRole').textContent = role;
+      document.getElementById('logoutBtn').style.display = 'inline-flex';
+
+      // Admin link
+      if (role?.toLowerCase() === 'admin') {
+        document.getElementById('adminNavLink').style.display  = '';
+        document.getElementById('mobileAdminLink').style.display = '';
+      }
+
+      loader.style.opacity = '0';
+      loader.style.transition = 'opacity 0.4s';
+      setTimeout(() => loader.style.display = 'none', 400);
+    });
+
+    function handleLogout() {
+      auth.signOut().then(() => window.location.href = 'index.html');
+    }
+
+    // ─── Chat Core ─────────────────────────────────────────────────────────────
+    const messagesArea = document.getElementById('messagesArea');
+    const chatInput    = document.getElementById('chatInput');
+    const sendBtn      = document.getElementById('sendBtn');
+
+    function getTime() {
+      return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function scrollToBottom() {
+      messagesArea.scrollTop = messagesArea.scrollHeight;
+    }
+
+    function hideWelcomeCard() {
+      const wc = document.getElementById('welcomeCard');
+      if (wc) {
+        wc.style.opacity = '0';
+        wc.style.transition = 'opacity 0.3s';
+        setTimeout(() => wc.remove(), 300);
+      }
+    }
+
+    function appendMessage(role, text, time) {
+      const isUser = role === 'user';
+      const row = document.createElement('div');
+      row.className = `message-row ${isUser ? 'user' : 'bot'}`;
+
+      const formattedText = text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/`(.*?)`/g, '<code style="background:rgba(139,92,246,0.12);padding:0.1rem 0.3rem;border-radius:4px;font-family:monospace;font-size:0.85em;">$1</code>')
+        .replace(/\n/g, '<br>');
+
+      if (!isUser) {
+        row.innerHTML = `
+          <div class="bot-avatar-small">🤖</div>
+          <div class="bubble-wrap">
+            <div class="bubble bot-bubble">${formattedText}</div>
+            <span class="msg-time">${time}</span>
+          </div>`;
+      } else {
+        row.innerHTML = `
+          <div class="bubble-wrap">
+            <div class="bubble user-bubble">${formattedText}</div>
+            <span class="msg-time">${time}</span>
+          </div>`;
+      }
+
+      messagesArea.appendChild(row);
+      scrollToBottom();
+    }
+
+    function showTypingIndicator() {
+      const indicator = document.createElement('div');
+      indicator.className = 'typing-indicator';
+      indicator.id = 'typingIndicator';
+      indicator.innerHTML = `
+        <div class="bot-avatar-small">🤖</div>
+        <div class="typing-dots">
+          <span></span><span></span><span></span>
+        </div>`;
+      messagesArea.appendChild(indicator);
+      scrollToBottom();
+    }
+
+    function removeTypingIndicator() {
+      const indicator = document.getElementById('typingIndicator');
+      if (indicator) indicator.remove();
+    }
+
+    function setInputState(disabled) {
+      chatInput.disabled = disabled;
+      sendBtn.disabled   = disabled;
+      if (disabled) {
+        sendBtn.innerHTML = `<div class="spinner" style="position:relative;z-index:1;"></div>`;
+      } else {
+        sendBtn.innerHTML = `
+          <svg class="send-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>`;
+      }
+    }
+
+    async function callGemini(userText) {
+      const body = {
+        contents: [
+          {
+            role: "user",
+            parts: [{ text: SYSTEM_PROMPT + "\n\nUser: " + userText }]
+          }
+        ]
+      };
+
+      const response = await fetch(GEMINI_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.error?.message || `API error ${response.status}`);
+      }
+
+      const data = await response.json();
+      const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!text) throw new Error('Empty response from Gemini');
+      return text;
+    }
+
+    async function sendMessage() {
+      const text = chatInput.value.trim();
+      if (!text || isWaiting) return;
+
+      hideWelcomeCard();
+      isWaiting = true;
+      setInputState(true);
+
+      const time = getTime();
+      messages.push({ role: 'user', text, time });
+      appendMessage('user', text, time);
+
+      chatInput.value = '';
+      autoResizeTextarea(chatInput);
+      showTypingIndicator();
+
+      try {
+        const botText = await callGemini(text);
+        removeTypingIndicator();
+        const botTime = getTime();
+        messages.push({ role: 'bot', text: botText, time: botTime });
+        appendMessage('bot', botText, botTime);
+      } catch (err) {
+        removeTypingIndicator();
+        const errTime = getTime();
+        const errMsg  = "Hmm, I'm having trouble answering right now. Please try again in a moment.";
+        messages.push({ role: 'bot', text: errMsg, time: errTime });
+        appendMessage('bot', errMsg, errTime);
+        showToast('AI response failed: ' + (err.message || 'Unknown error'), 'error');
+      } finally {
+        isWaiting = false;
+        setInputState(false);
+        chatInput.focus();
+      }
+    }
+
+    function sendQuickPrompt(prompt) {
+      chatInput.value = prompt;
+      sendMessage();
+    }
+
+    function clearChat() {
+      messages = [];
+      messagesArea.innerHTML = `
+        <div class="welcome-card" id="welcomeCard">
+          <div class="welcome-icon">🤖</div>
+          <h3>Hello! I'm your BCA Assistant.</h3>
+          <p>Ask me anything about your courses, exams, resources, or college events. I'm here to help you succeed!</p>
+          <div class="quick-prompts">
+            <button class="quick-prompt-btn" onclick="sendQuickPrompt('What are the BCA course subjects?')">📚 BCA Subjects</button>
+            <button class="quick-prompt-btn" onclick="sendQuickPrompt('How should I prepare for semester exams?')">📝 Exam Tips</button>
+            <button class="quick-prompt-btn" onclick="sendQuickPrompt('What programming languages should BCA students learn?')">💻 Programming</button>
+            <button class="quick-prompt-btn" onclick="sendQuickPrompt('Tell me about career options after BCA')">🎓 Career Paths</button>
+          </div>
+        </div>`;
+      showToast('Chat cleared. Start a new conversation!', 'info', 2500);
+    }
+
+    function handleInputKeydown(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    }
+
+    function autoResizeTextarea(el) {
+      el.style.height = 'auto';
+      el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+    }
+
+    // Focus input on load after auth resolves
+    setTimeout(() => { if (!chatInput.disabled) chatInput.focus(); }, 1200);
+  </script>
+  <script src="js/site-nav.js"></script>
+</body>
+</html>
+
+

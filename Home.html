@@ -1,0 +1,1379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard – Sri Aurobindo College BCA</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <script>
+    // Tailwind dark mode via class
+    if (typeof tailwind !== 'undefined' && tailwind.config) {
+      tailwind.config = { darkMode: 'class' };
+    }
+  </script>
+
+  <!-- Firebase Compat SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
+
+  <style>
+    /* ═══════════ RESET & FONTS ═══════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --pink:   #ec4899;
+      --indigo: #6366f1;
+      --violet: #8b5cf6;
+      --grad:   linear-gradient(135deg, #ec4899 0%, #8b5cf6 50%, #6366f1 100%);
+      --grad-h: linear-gradient(135deg, #db2777 0%, #7c3aed 50%, #4f46e5 100%);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      background-color: #f9fafb;
+      color: #111827;
+      transition: background-color 0.4s ease, color 0.4s ease;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+
+    html.dark body {
+      background-color: #000000;
+      color: #f9fafb;
+    }
+
+    /* ═══════════ NAVBAR ═══════════ */
+    .navbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      height: 64px;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(0,0,0,0.07);
+      display: flex;
+      align-items: center;
+      padding: 0 1.25rem;
+      gap: 1rem;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.05);
+      transition: background 0.4s ease, border-color 0.4s ease;
+    }
+    html.dark .navbar {
+      background: rgba(0,0,0,0.92);
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      box-shadow: 0 2px 16px rgba(0,0,0,0.5);
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+
+    .logo-badge {
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      background: var(--grad);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 800;
+      font-size: 0.88rem;
+      color: #fff;
+      letter-spacing: 1px;
+      box-shadow: 0 4px 12px rgba(139,92,246,0.35), 0 2px 6px rgba(236,72,153,0.2);
+      position: relative;
+      flex-shrink: 0;
+    }
+    .logo-badge::after {
+      content: '';
+      position: absolute;
+      top: 5px; left: 6px;
+      width: 40%; height: 28%;
+      background: rgba(255,255,255,0.25);
+      border-radius: 4px;
+      filter: blur(2px);
+    }
+
+    .brand-text .college-name {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.92rem;
+      font-weight: 800;
+      color: #111827;
+      line-height: 1.1;
+      letter-spacing: -0.01em;
+    }
+    html.dark .brand-text .college-name { color: #f9fafb; }
+    .brand-text .college-dept {
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      background: var(--grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Nav links */
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 0.15rem;
+      flex: 1;
+      overflow-x: auto;
+      scrollbar-width: none;
+      padding: 0 0.5rem;
+    }
+    .nav-links::-webkit-scrollbar { display: none; }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #6b7280;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: color 0.2s, background 0.2s;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      font-family: 'Inter', sans-serif;
+    }
+    .nav-link:hover {
+      color: #8b5cf6;
+      background: rgba(139,92,246,0.08);
+    }
+    .nav-link.active {
+      color: #8b5cf6;
+      background: rgba(139,92,246,0.1);
+    }
+    html.dark .nav-link { color: #9ca3af; }
+    html.dark .nav-link:hover {
+      color: #a78bfa;
+      background: rgba(139,92,246,0.15);
+    }
+    html.dark .nav-link.active {
+      color: #a78bfa;
+      background: rgba(139,92,246,0.18);
+    }
+
+    .nav-link-role {
+      background: var(--grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-weight: 700;
+    }
+    .nav-link-role:hover {
+      background: rgba(139,92,246,0.08);
+    }
+
+    /* Nav right controls */
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-shrink: 0;
+    }
+
+    .nav-user-chip {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 5px 10px 5px 5px;
+      border-radius: 40px;
+      background: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      transition: background 0.3s, border-color 0.3s;
+    }
+    html.dark .nav-user-chip {
+      background: #1f2937;
+      border-color: #374151;
+    }
+    .user-avatar {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: var(--grad);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 800;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .user-name-label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #374151;
+      max-width: 100px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    html.dark .user-name-label { color: #e5e7eb; }
+
+    /* Dark toggle in navbar */
+    .dark-toggle-nav {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      border: 1px solid #e5e7eb;
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.3s, border-color 0.3s, transform 0.2s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    .dark-toggle-nav:hover { transform: scale(1.08); }
+    html.dark .dark-toggle-nav {
+      background: #1f2937;
+      border-color: #374151;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    }
+
+    .btn-logout {
+      height: 34px;
+      padding: 0 12px;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #ec4899, #8b5cf6);
+      color: #fff;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.76rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: opacity 0.2s, transform 0.15s;
+      white-space: nowrap;
+    }
+    .btn-logout:hover { opacity: 0.88; transform: translateY(-1px); }
+
+    /* ═══════════ MAIN LAYOUT ═══════════ */
+    .main-content {
+      padding-top: 80px;
+      min-height: 100vh;
+      width: 100%;
+    }
+
+    .page-wrap {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1.5rem 1.25rem 3rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.75rem;
+    }
+
+    /* ═══════════ WELCOME BANNER ═══════════ */
+    .welcome-banner {
+      border-radius: 24px;
+      background: var(--grad);
+      padding: 2rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(139,92,246,0.35), 0 2px 8px rgba(236,72,153,0.2);
+    }
+    .welcome-banner::before {
+      content: '';
+      position: absolute;
+      top: -40px; right: -40px;
+      width: 200px; height: 200px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 50%;
+    }
+    .welcome-banner::after {
+      content: '';
+      position: absolute;
+      bottom: -60px; left: 40%;
+      width: 260px; height: 260px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 50%;
+    }
+    .welcome-text h1 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.7rem;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+    }
+    .welcome-text p {
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.82);
+      margin-top: 0.35rem;
+      font-weight: 500;
+    }
+    .role-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.3);
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #fff;
+      margin-top: 0.55rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .welcome-icon {
+      font-size: 4rem;
+      position: relative;
+      z-index: 1;
+      flex-shrink: 0;
+      animation: float 3s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    /* ═══════════ STATS ROW ═══════════ */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+    }
+    @media (max-width: 900px) { .stats-row { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 480px) { .stats-row { grid-template-columns: repeat(2, 1fr); } }
+
+    .stat-card {
+      background: #ffffff;
+      border-radius: 18px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.07), 0 0 0 1px rgba(0,0,0,0.04);
+      padding: 1.2rem 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      transition: background 0.4s ease, box-shadow 0.3s, transform 0.2s;
+    }
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.04);
+    }
+    html.dark .stat-card {
+      background: #111827;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.4), 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05);
+    }
+    .stat-icon {
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      margin-bottom: 0.25rem;
+    }
+    .stat-value {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: #111827;
+      line-height: 1;
+    }
+    html.dark .stat-value { color: #f9fafb; }
+    .stat-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    /* ═══════════ GRID LAYOUT ═══════════ */
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 1.5rem;
+      align-items: start;
+    }
+    @media (max-width: 900px) {
+      .content-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ═══════════ SECTION HEADERS ═══════════ */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+    .section-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #111827;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    html.dark .section-title { color: #f9fafb; }
+    .section-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 22px;
+      height: 22px;
+      padding: 0 6px;
+      border-radius: 20px;
+      background: var(--grad);
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #fff;
+    }
+    .section-action {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #8b5cf6;
+      text-decoration: none;
+      padding: 4px 10px;
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+    .section-action:hover { background: rgba(139,92,246,0.1); }
+
+    /* ═══════════ CARDS ═══════════ */
+    .card {
+      background: #ffffff;
+      border-radius: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.04);
+      transition: background 0.4s ease, box-shadow 0.4s ease;
+      overflow: hidden;
+    }
+    html.dark .card {
+      background: #111827;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.4), 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05);
+    }
+    .card-accent {
+      height: 3px;
+      background: var(--grad);
+      width: 100%;
+    }
+    .card-body {
+      padding: 1.25rem 1.5rem;
+    }
+
+    /* ═══════════ ANNOUNCEMENT CARDS ═══════════ */
+    .ann-card {
+      background: #fff;
+      border-radius: 16px;
+      border: 1px solid #e5e7eb;
+      padding: 1rem 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      transition: background 0.4s, border-color 0.3s, box-shadow 0.2s, transform 0.2s;
+      margin-bottom: 0.75rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .ann-card::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      background: var(--grad);
+      border-radius: 0 2px 2px 0;
+    }
+    .ann-card:hover {
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      transform: translateY(-1px);
+    }
+    html.dark .ann-card {
+      background: #1f2937;
+      border-color: #374151;
+    }
+    html.dark .ann-card:hover {
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+    }
+    .ann-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #111827;
+    }
+    html.dark .ann-title { color: #f9fafb; }
+    .ann-body {
+      font-size: 0.81rem;
+      color: #6b7280;
+      line-height: 1.5;
+    }
+    html.dark .ann-body { color: #9ca3af; }
+    .ann-meta {
+      font-size: 0.72rem;
+      color: #9ca3af;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 0.2rem;
+    }
+
+    /* ═══════════ EVENT ITEMS ═══════════ */
+    .event-item {
+      display: flex;
+      gap: 1rem;
+      padding: 0.9rem 0;
+      border-bottom: 1px solid #f3f4f6;
+      transition: border-color 0.3s;
+    }
+    html.dark .event-item { border-bottom-color: #1f2937; }
+    .event-item:last-child { border-bottom: none; }
+    .event-date-box {
+      width: 48px; height: 52px;
+      border-radius: 12px;
+      background: var(--grad);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: #fff;
+    }
+    .event-day {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+    .event-month {
+      font-size: 0.6rem;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      opacity: 0.85;
+    }
+    .event-info { flex: 1; }
+    .event-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #111827;
+      line-height: 1.3;
+    }
+    html.dark .event-title { color: #f9fafb; }
+    .event-meta {
+      font-size: 0.74rem;
+      color: #6b7280;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 0.2rem;
+    }
+    html.dark .event-meta { color: #9ca3af; }
+
+    /* ═══════════ QUICK ACTION CARDS ═══════════ */
+    .quick-actions {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+    }
+    @media (max-width: 600px) { .quick-actions { grid-template-columns: 1fr; } }
+
+    .qa-card {
+      background: #fff;
+      border-radius: 18px;
+      border: 1px solid #e5e7eb;
+      padding: 1.4rem 1.25rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.7rem;
+      text-decoration: none;
+      text-align: center;
+      cursor: pointer;
+      transition: background 0.3s, border-color 0.3s, box-shadow 0.25s, transform 0.2s;
+    }
+    .qa-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 28px rgba(139,92,246,0.18);
+      border-color: #c4b5fd;
+    }
+    html.dark .qa-card {
+      background: #111827;
+      border-color: #374151;
+    }
+    html.dark .qa-card:hover {
+      border-color: #7c3aed;
+      box-shadow: 0 8px 28px rgba(139,92,246,0.25);
+    }
+    .qa-icon {
+      width: 52px; height: 52px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+    }
+    .qa-label {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #111827;
+    }
+    html.dark .qa-label { color: #f9fafb; }
+    .qa-desc {
+      font-size: 0.74rem;
+      color: #6b7280;
+      line-height: 1.4;
+    }
+    html.dark .qa-desc { color: #9ca3af; }
+
+    /* Buttons */
+    .btn-primary {
+      height: 48px;
+      border: none;
+      border-radius: 12px;
+      background: var(--grad);
+      color: #fff;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.92rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(139,92,246,0.35);
+      transition: box-shadow 0.25s, transform 0.15s;
+      outline: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-decoration: none;
+      padding: 0 1.25rem;
+    }
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--grad-h);
+      opacity: 0;
+      transition: opacity 0.25s;
+    }
+    .btn-primary:hover::before { opacity: 1; }
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(139,92,246,0.4);
+    }
+    .btn-primary span { position: relative; z-index: 1; }
+
+    /* ═══════════ LOADING / EMPTY STATES ═══════════ */
+    .loading-dots {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 0;
+    }
+    .loading-dots span {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--grad);
+      animation: bounce 1.2s infinite ease-in-out;
+    }
+    .loading-dots span:nth-child(2) { animation-delay: 0.15s; }
+    .loading-dots span:nth-child(3) { animation-delay: 0.3s; }
+    @keyframes bounce {
+      0%, 80%, 100% { transform: scale(0.6); opacity: 0.5; }
+      40% { transform: scale(1); opacity: 1; }
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 2rem 1rem;
+      color: #9ca3af;
+      font-size: 0.85rem;
+    }
+    .empty-state .empty-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+
+    /* ═══════════ FOOTER ═══════════ */
+    .site-footer {
+      background: #fff;
+      border-top: 1px solid #f3f4f6;
+      padding: 1.25rem 1.5rem;
+      text-align: center;
+      transition: background 0.4s, border-color 0.4s;
+    }
+    html.dark .site-footer {
+      background: #0a0a0a;
+      border-top-color: #1f2937;
+    }
+    .footer-text {
+      font-size: 0.78rem;
+      color: #6b7280;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+    .footer-dot { color: #d1d5db; }
+    .footer-secure {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      background: var(--grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ═══════════ MOBILE HAMBURGER ═══════════ */
+    .hamburger {
+      display: none;
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      border: 1px solid #e5e7eb;
+      background: #fff;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: background 0.3s;
+      flex-shrink: 0;
+    }
+    html.dark .hamburger { background: #1f2937; border-color: #374151; }
+    @media (max-width: 768px) {
+      .hamburger { display: flex; }
+      .nav-links { display: none; }
+      .nav-links.open {
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        top: 64px; left: 0; right: 0;
+        background: rgba(255,255,255,0.97);
+        backdrop-filter: blur(16px);
+        border-bottom: 1px solid #e5e7eb;
+        padding: 0.75rem 1rem 1rem;
+        z-index: 99;
+        gap: 0.25rem;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+      }
+      html.dark .nav-links.open {
+        background: rgba(0,0,0,0.97);
+        border-bottom-color: #1f2937;
+      }
+      .nav-link { padding: 8px 12px; font-size: 0.88rem; }
+    }
+
+    /* ═══════════ GRADIENTS for stat icons ═══════════ */
+    .grad-pink-violet { background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%); }
+    .grad-violet-indigo { background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%); }
+    .grad-indigo-cyan { background: linear-gradient(135deg, #6366f1 0%, #06b6d4 100%); }
+    .grad-pink-orange { background: linear-gradient(135deg, #ec4899 0%, #f97316 100%); }
+
+    /* ═══════════ NOTIFICATION BELL ═══════════ */
+    .notif-btn {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      border: 1px solid #e5e7eb;
+      background: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+      cursor: pointer;
+      position: relative;
+      transition: background 0.3s, border-color 0.3s, transform 0.2s;
+    }
+    .notif-btn:hover { transform: scale(1.08); }
+    html.dark .notif-btn { background: #1f2937; border-color: #374151; }
+    .notif-dot {
+      position: absolute;
+      top: 5px; right: 5px;
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #ec4899;
+      border: 1.5px solid #fff;
+    }
+    html.dark .notif-dot { border-color: #1f2937; }
+
+    /* ═══════════ TEXT GRADIENT UTILITY ═══════════ */
+    .text-gradient {
+      background: var(--grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ═══════════ SCROLL REVEAL ═══════════ */
+    .reveal {
+      opacity: 0;
+      transform: translateY(16px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- ═══════ NAVBAR ═══════ -->
+  <nav class="navbar" id="navbar">
+    <!-- Brand -->
+    <a class="nav-brand" href="Home.html">
+      <div class="logo-badge">SAC</div>
+      <div class="brand-text">
+        <div class="college-name">Sri Aurobindo College</div>
+        <div class="college-dept">BCA Department</div>
+      </div>
+    </a>
+
+    <!-- Hamburger (mobile) -->
+    <button class="hamburger" id="hamburger" aria-label="Toggle menu">☰</button>
+
+    <!-- Nav links -->
+    <div class="nav-links" id="navLinks">
+      <a href="Home.html" class="nav-link active">🏠 Home</a>
+      <a href="upload.html" class="nav-link">📤 Upload</a>
+      <a href="resources.html" class="nav-link">📚 Resources</a>
+      <a href="events.html" class="nav-link">🗓️ Events</a>
+      <a href="gallery.html" class="nav-link">🖼️ Gallery</a>
+      <a href="notifications.html" class="nav-link">🔔 Notifications</a>
+      <a href="about.html" class="nav-link">ℹ️ About</a>
+      <!-- Role-based link injected by JS -->
+      <span id="roleNavLink"></span>
+    </div>
+
+    <!-- Right controls -->
+    <div class="nav-right">
+      <button class="notif-btn" onclick="window.location.href='notifications.html'" title="Notifications">
+        🔔
+        <span class="notif-dot" id="notifDot" style="display:none;"></span>
+      </button>
+      <button class="dark-toggle-nav" id="darkToggle" title="Toggle dark mode">🌙</button>
+      <div class="nav-user-chip" id="userChip">
+        <div class="user-avatar" id="userAvatar">?</div>
+        <span class="user-name-label" id="userNameLabel">Loading...</span>
+      </div>
+      <button class="btn-logout" id="logoutBtn" style="display:none;" onclick="handleLogout()">Logout</button>
+    </div>
+  </nav>
+
+  <!-- ═══════ MAIN CONTENT ═══════ -->
+  <main class="main-content">
+    <div class="page-wrap">
+
+      <!-- WELCOME BANNER -->
+      <div class="welcome-banner reveal" id="welcomeBanner">
+        <div class="welcome-text">
+          <h1 id="welcomeHeading">Welcome back! 👋</h1>
+          <p id="welcomeSub">Sri Aurobindo College · BCA Department</p>
+          <div class="role-badge" id="roleBadge">
+            <span id="roleIcon">👤</span>
+            <span id="roleText">Loading...</span>
+          </div>
+        </div>
+        <div class="welcome-icon" id="welcomeEmoji">🎓</div>
+      </div>
+
+      <!-- STATS ROW -->
+      <div class="stats-row reveal" id="statsRow" style="transition-delay:0.08s;">
+        <div class="stat-card">
+          <div class="stat-icon grad-pink-violet" style="color:#fff;">📢</div>
+          <div class="stat-value" id="statAnn">—</div>
+          <div class="stat-label">Announcements</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon grad-violet-indigo" style="color:#fff;">🗓️</div>
+          <div class="stat-value" id="statEvents">—</div>
+          <div class="stat-label">Upcoming Events</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon grad-indigo-cyan" style="color:#fff;">📚</div>
+          <div class="stat-value" id="statResources">—</div>
+          <div class="stat-label">Resources</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon grad-pink-orange" style="color:#fff;">🎓</div>
+          <div class="stat-value" id="statStudents">—</div>
+          <div class="stat-label">Students</div>
+        </div>
+      </div>
+
+      <!-- QUICK ACTIONS -->
+      <div class="reveal" style="transition-delay:0.14s;">
+        <div class="section-header">
+          <div class="section-title">⚡ Quick Actions</div>
+        </div>
+        <div class="quick-actions">
+          <a href="upload.html" class="qa-card">
+            <div class="qa-icon grad-pink-violet" style="color:#fff;">📤</div>
+            <div class="qa-label">Upload Resource</div>
+            <div class="qa-desc">Share notes, slides, or study material</div>
+          </a>
+          <a href="resources.html" class="qa-card">
+            <div class="qa-icon grad-violet-indigo" style="color:#fff;">📚</div>
+            <div class="qa-label">View Resources</div>
+            <div class="qa-desc">Browse all uploaded study materials</div>
+          </a>
+          <a href="events.html" class="qa-card">
+            <div class="qa-icon grad-indigo-cyan" style="color:#fff;">🗓️</div>
+            <div class="qa-label">All Events</div>
+            <div class="qa-desc">View & manage department events</div>
+          </a>
+        </div>
+      </div>
+
+      <!-- MAIN CONTENT GRID (Announcements + Events sidebar) -->
+      <div class="content-grid">
+
+        <!-- LEFT: Announcements -->
+        <div class="reveal" style="transition-delay:0.2s;">
+          <div class="section-header">
+            <div class="section-title">
+              📢 Announcements
+              <span class="section-badge" id="annBadge">0</span>
+            </div>
+            <a href="notifications.html" class="section-action">View all →</a>
+          </div>
+
+          <div id="announcementsContainer">
+            <!-- Loading state -->
+            <div class="loading-dots" id="annLoading">
+              <span></span><span></span><span></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT SIDEBAR -->
+        <div style="display:flex;flex-direction:column;gap:1.5rem;">
+
+          <!-- Upcoming Events -->
+          <div class="card reveal" style="transition-delay:0.26s;">
+            <div class="card-accent"></div>
+            <div class="card-body">
+              <div class="section-header" style="margin-bottom:0.75rem;">
+                <div class="section-title" style="font-size:0.95rem;">🗓️ Upcoming Events</div>
+                <a href="events.html" class="section-action" style="font-size:0.74rem;">All →</a>
+              </div>
+
+              <div id="eventsContainer">
+                <div class="loading-dots" id="eventsLoading">
+                  <span></span><span></span><span></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mini Profile Card -->
+          <div class="card reveal" style="transition-delay:0.32s;">
+            <div class="card-accent"></div>
+            <div class="card-body">
+              <div class="section-title" style="font-size:0.95rem;margin-bottom:1rem;">👤 My Profile</div>
+              <div style="display:flex;align-items:center;gap:0.9rem;margin-bottom:1rem;">
+                <div id="profileAvatar" style="width:52px;height:52px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:800;color:#fff;flex-shrink:0;">?</div>
+                <div>
+                  <div id="profileName" style="font-family:'Plus Jakarta Sans',sans-serif;font-size:0.92rem;font-weight:800;color:#111827;">Loading...</div>
+                  <div id="profileEmail" style="font-size:0.75rem;color:#6b7280;margin-top:2px;"></div>
+                  <div id="profileRole" style="font-size:0.72rem;font-weight:600;margin-top:4px;"></div>
+                </div>
+              </div>
+              <a href="profile.html" class="btn-primary" style="font-size:0.82rem;height:38px;padding:0 1rem;">
+                <span>✏️ Edit Profile</span>
+              </a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ═══════ FOOTER ═══════ -->
+  <footer class="site-footer">
+    <div class="footer-text">
+      <span>Sri Aurobindo College</span>
+      <span class="footer-dot">·</span>
+      <span>BCA Department</span>
+      <span class="footer-dot">·</span>
+      <span class="footer-secure">🔒 Secured with Firebase</span>
+      <span class="footer-dot">·</span>
+      <span id="footerYear"></span>
+    </div>
+  </footer>
+
+  <!-- ═══════════════════════════ SCRIPTS ═══════════════════════════ -->
+  <script>
+    // ── Firebase Config ──────────────────────────────────────────────
+    const firebaseConfig = {
+      apiKey: "AIzaSyCX5g8sPw_iG0HMujrZM8dG7w510c6jpC4",
+      authDomain: "campus-hub-2220b.firebaseapp.com",
+      projectId: "campus-hub-2220b",
+      storageBucket: "campus-hub-2220b.firebasestorage.app",
+      messagingSenderId: "371742140259",
+      appId: "1:371742140259:web:55a2b29fd269689abb5556"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db   = firebase.firestore();
+
+    // ── Dark Mode ────────────────────────────────────────────────────
+    const html        = document.documentElement;
+    const darkToggle  = document.getElementById('darkToggle');
+
+    function applyDark(isDark) {
+      if (isDark) {
+        html.classList.add('dark');
+        darkToggle.textContent = '☀️';
+      } else {
+        html.classList.remove('dark');
+        darkToggle.textContent = '🌙';
+      }
+    }
+    applyDark(localStorage.getItem('darkMode') === 'true');
+    darkToggle.addEventListener('click', () => {
+      const next = !html.classList.contains('dark');
+      localStorage.setItem('darkMode', next);
+      applyDark(next);
+    });
+
+    // ── Mobile hamburger ────────────────────────────────────────────
+    const hamburger = document.getElementById('hamburger');
+    const navLinks  = document.getElementById('navLinks');
+    hamburger.addEventListener('click', () => navLinks.classList.toggle('open'));
+    document.addEventListener('click', e => {
+      if (!hamburger.contains(e.target) && !navLinks.contains(e.target)) {
+        navLinks.classList.remove('open');
+      }
+    });
+
+    // ── Footer year ─────────────────────────────────────────────────
+    document.getElementById('footerYear').textContent = new Date().getFullYear();
+
+    // ── Scroll reveal ───────────────────────────────────────────────
+    function initReveal() {
+      const els = document.querySelectorAll('.reveal');
+      const io  = new IntersectionObserver(entries => {
+        entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } });
+      }, { threshold: 0.08 });
+      els.forEach(el => io.observe(el));
+    }
+    initReveal();
+
+    // ── Role helpers ─────────────────────────────────────────────────
+    const ROLE_META = {
+      admin: { label: 'Administrator', icon: '🛡️', emoji: '🛡️', hub: { label: 'Admin Dashboard', href: 'admin.html', icon: '🛡️' } },
+      lecturer: { label: 'Lecturer', icon: '👨‍🏫', emoji: '👨‍🏫', hub: { label: 'Lecturers Hub', href: 'lecturers.html', icon: '👨‍🏫' } },
+      student: { label: 'Student', icon: '🎓', emoji: '🎓', hub: { label: 'Students Hub', href: 'students.html', icon: '🎓' } },
+    };
+
+    function getRoleMeta(role) {
+      return ROLE_META[role?.toLowerCase()] || { label: role || 'User', icon: '👤', emoji: '🎓', hub: null };
+    }
+
+    function getInitials(name) {
+      if (!name) return '?';
+      return name.split(' ').filter(Boolean).map(w => w[0]).join('').toUpperCase().slice(0, 2);
+    }
+
+    // ── Update UI with user data ─────────────────────────────────────
+    function updateUserUI(displayName, email, role) {
+      const meta     = getRoleMeta(role);
+      const initials = getInitials(displayName || email || 'U');
+
+      // Navbar chip
+      document.getElementById('userAvatar').textContent      = initials;
+      document.getElementById('userNameLabel').textContent   = displayName || email || 'User';
+      document.getElementById('logoutBtn').style.display     = 'inline-flex';
+
+      // Welcome banner
+      const firstName = (displayName || 'there').split(' ')[0];
+      document.getElementById('welcomeHeading').textContent  = `Welcome back, ${firstName}! 👋`;
+      document.getElementById('welcomeSub').textContent      = 'Sri Aurobindo College · BCA Department';
+      document.getElementById('welcomeEmoji').textContent    = meta.emoji;
+      document.getElementById('roleBadge').innerHTML         = `<span>${meta.icon}</span><span>${meta.label}</span>`;
+
+      // Profile card
+      document.getElementById('profileAvatar').textContent   = initials;
+      document.getElementById('profileName').textContent     = displayName || 'User';
+      document.getElementById('profileEmail').textContent    = email || '';
+
+      const profileRoleEl = document.getElementById('profileRole');
+      profileRoleEl.innerHTML = `<span style="background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">${meta.icon} ${meta.label}</span>`;
+
+      // Dark mode fix for profile name
+      const profileNameEl = document.getElementById('profileName');
+      if (html.classList.contains('dark')) profileNameEl.style.color = '#f9fafb';
+
+      // Role-based nav link
+      const roleNavLink = document.getElementById('roleNavLink');
+      if (meta.hub) {
+        roleNavLink.innerHTML = `<a href="${meta.hub.href}" class="nav-link nav-link-role">${meta.hub.icon} ${meta.hub.label}</a>`;
+      }
+    }
+
+    // ── Fetch counts for stats ───────────────────────────────────────
+    async function fetchStats() {
+      try {
+        const [annSnap, evSnap, resSnap, studSnap] = await Promise.allSettled([
+          db.collection('announcements').get(),
+          db.collection('events').where('date', '>=', new Date().toISOString().split('T')[0]).get(),
+          db.collection('resources').get(),
+          db.collection('users').where('role', '==', 'student').get(),
+        ]);
+        document.getElementById('statAnn').textContent       = annSnap.status === 'fulfilled' ? annSnap.value.size : '—';
+        document.getElementById('statEvents').textContent    = evSnap.status === 'fulfilled'  ? evSnap.value.size  : '—';
+        document.getElementById('statResources').textContent = resSnap.status === 'fulfilled' ? resSnap.value.size : '—';
+        document.getElementById('statStudents').textContent  = studSnap.status === 'fulfilled'? studSnap.value.size: '—';
+      } catch (err) {
+        console.warn('Stats fetch error:', err);
+      }
+    }
+
+    // ── Format date ──────────────────────────────────────────────────
+    function formatDate(ts) {
+      if (!ts) return '';
+      let d;
+      if (ts.toDate) d = ts.toDate();
+      else if (ts.seconds) d = new Date(ts.seconds * 1000);
+      else d = new Date(ts);
+      return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    }
+
+    function timeAgo(ts) {
+      if (!ts) return '';
+      let d;
+      if (ts.toDate) d = ts.toDate();
+      else if (ts.seconds) d = new Date(ts.seconds * 1000);
+      else d = new Date(ts);
+      const secs = Math.floor((Date.now() - d) / 1000);
+      if (secs < 60)   return 'Just now';
+      if (secs < 3600) return `${Math.floor(secs/60)}m ago`;
+      if (secs < 86400)return `${Math.floor(secs/3600)}h ago`;
+      return `${Math.floor(secs/86400)}d ago`;
+    }
+
+    // ── Render announcements ─────────────────────────────────────────
+    function renderAnnouncements(docs) {
+      const container = document.getElementById('announcementsContainer');
+      const loading   = document.getElementById('annLoading');
+      if (loading) loading.remove();
+
+      document.getElementById('annBadge').textContent = docs.length;
+      document.getElementById('statAnn').textContent  = docs.length;
+
+      if (docs.length === 0) {
+        container.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div>No announcements yet. Check back soon!</div>`;
+        return;
+      }
+
+      container.innerHTML = '';
+      docs.forEach(doc => {
+        const d   = doc.data();
+        const div = document.createElement('div');
+        div.className = 'ann-card';
+        div.innerHTML = `
+          <div class="ann-title">${escHtml(d.title || 'Untitled')}</div>
+          <div class="ann-body">${escHtml(d.body || d.content || d.message || '')}</div>
+          <div class="ann-meta">🕐 ${timeAgo(d.createdAt)}<span style="color:#e5e7eb;margin:0 4px;">·</span>${formatDate(d.createdAt)}</div>
+        `;
+        container.appendChild(div);
+      });
+
+      // Show notif dot if new announcement in last 24h
+      const newest = docs[0]?.data()?.createdAt;
+      if (newest) {
+        let d;
+        if (newest.toDate) d = newest.toDate();
+        else if (newest.seconds) d = new Date(newest.seconds * 1000);
+        else d = new Date(newest);
+        if (Date.now() - d < 86400000) {
+          document.getElementById('notifDot').style.display = 'block';
+        }
+      }
+    }
+
+    // ── Render events ────────────────────────────────────────────────
+    function renderEvents(docs) {
+      const container = document.getElementById('eventsContainer');
+      const loading   = document.getElementById('eventsLoading');
+      if (loading) loading.remove();
+
+      if (docs.length === 0) {
+        container.innerHTML = `<div class="empty-state" style="padding:1rem 0;"><div class="empty-icon">🗓️</div>No upcoming events.</div>`;
+        return;
+      }
+
+      container.innerHTML = '';
+      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      docs.slice(0, 3).forEach(doc => {
+        const d    = doc.data();
+        let eventDate = null;
+        if (d.date) {
+          // date can be a string 'YYYY-MM-DD' or a Firestore timestamp
+          if (typeof d.date === 'string') eventDate = new Date(d.date + 'T00:00:00');
+          else if (d.date.toDate) eventDate = d.date.toDate();
+          else if (d.date.seconds) eventDate = new Date(d.date.seconds * 1000);
+        }
+
+        const day   = eventDate ? eventDate.getDate() : '?';
+        const month = eventDate ? months[eventDate.getMonth()] : '';
+
+        const item = document.createElement('div');
+        item.className = 'event-item';
+        item.innerHTML = `
+          <div class="event-date-box">
+            <div class="event-day">${day}</div>
+            <div class="event-month">${month}</div>
+          </div>
+          <div class="event-info">
+            <div class="event-title">${escHtml(d.title || 'Untitled Event')}</div>
+            <div class="event-meta">📍 ${escHtml(d.location || 'BCA Department')}</div>
+          </div>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    // ── HTML escape ──────────────────────────────────────────────────
+    function escHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    // ── Firestore real-time listeners ────────────────────────────────
+    let annUnsubscribe   = null;
+    let evUnsubscribe    = null;
+
+    function startListeners() {
+      // Announcements — real-time, descending by createdAt
+      annUnsubscribe = db.collection('announcements')
+        .orderBy('createdAt', 'desc')
+        .onSnapshot(snap => {
+          renderAnnouncements(snap.docs);
+        }, err => {
+          console.warn('Announcements error:', err);
+          const container = document.getElementById('announcementsContainer');
+          const loading   = document.getElementById('annLoading');
+          if (loading) loading.remove();
+          container.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div>Could not load announcements.</div>`;
+        });
+
+      // Events — upcoming 3, sorted by date asc
+      const today = new Date();
+      today.setHours(0,0,0,0);
+      const todayStr = today.toISOString().split('T')[0];
+
+      evUnsubscribe = db.collection('events')
+        .orderBy('date', 'asc')
+        .onSnapshot(snap => {
+          // Filter upcoming events
+          const upcoming = snap.docs.filter(doc => {
+            const d = doc.data();
+            if (!d.date) return false;
+            let evDate;
+            if (typeof d.date === 'string') evDate = d.date;
+            else if (d.date.toDate) evDate = d.date.toDate().toISOString().split('T')[0];
+            else if (d.date.seconds) evDate = new Date(d.date.seconds*1000).toISOString().split('T')[0];
+            return evDate >= todayStr;
+          });
+          document.getElementById('statEvents').textContent = upcoming.length;
+          renderEvents(upcoming);
+        }, err => {
+          console.warn('Events error:', err);
+          const container = document.getElementById('eventsContainer');
+          const loading   = document.getElementById('eventsLoading');
+          if (loading) loading.remove();
+          container.innerHTML = `<div class="empty-state" style="padding:1rem 0;"><div class="empty-icon">⚠️</div>Could not load events.</div>`;
+        });
+    }
+
+    // ── Logout ───────────────────────────────────────────────────────
+    function handleLogout() {
+      if (annUnsubscribe) annUnsubscribe();
+      if (evUnsubscribe)  evUnsubscribe();
+      auth.signOut().then(() => { window.location.href = 'index.html'; });
+    }
+
+    // ── Auth state check ─────────────────────────────────────────────
+    auth.onAuthStateChanged(async user => {
+      if (!user) {
+        window.location.href = 'index.html';
+        return;
+      }
+
+      // Start Firestore listeners
+      startListeners();
+      fetchStats();
+
+      // Default UI while Firestore loads
+      updateUserUI(user.displayName, user.email, null);
+
+      // Fetch user doc from Firestore
+      try {
+        const snap = await db.collection('users').doc(user.uid).get();
+        if (snap.exists) {
+          const data = snap.data();
+          updateUserUI(
+            data.name || data.displayName || user.displayName,
+            data.email || user.email,
+            data.role
+          );
+        } else {
+          // Fallback: use Firebase Auth data
+          updateUserUI(user.displayName, user.email, 'student');
+        }
+      } catch (err) {
+        console.warn('User doc fetch error:', err);
+        updateUserUI(user.displayName, user.email, 'student');
+      }
+    });
+
+    // ── Observe dark mode changes for profile name color ────────────
+    const nameEl = document.getElementById('profileName');
+    const observer = new MutationObserver(() => {
+      if (nameEl) nameEl.style.color = html.classList.contains('dark') ? '#f9fafb' : '#111827';
+    });
+    observer.observe(html, { attributes: true, attributeFilter: ['class'] });
+  </script>
+  <script src="js/site-nav.js"></script>
+</body>
+</html>
+

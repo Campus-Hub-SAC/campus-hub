@@ -1,0 +1,1852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gallery – Sri Aurobindo College BCA</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { darkMode: 'class' };</script>
+
+  <!-- Firebase Compat SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
+
+  <style>
+    /* ═══════════ RESET & FONTS ═══════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --pink:   #ec4899;
+      --indigo: #6366f1;
+      --violet: #8b5cf6;
+      --grad:   linear-gradient(135deg, #ec4899 0%, #8b5cf6 50%, #6366f1 100%);
+      --grad-h: linear-gradient(135deg, #db2777 0%, #7c3aed 50%, #4f46e5 100%);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      background-color: #f9fafb;
+      color: #111827;
+      transition: background-color 0.4s ease, color 0.4s ease;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+
+    html.dark body {
+      background-color: #000000;
+      color: #f9fafb;
+    }
+
+    /* ═══════════ DARK MODE TOGGLE ═══════════ */
+    #darkToggle {
+      position: fixed;
+      top: 1rem; right: 1rem;
+      z-index: 999;
+      width: 42px; height: 42px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      background: #ffffff;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.06);
+      transition: background 0.3s, box-shadow 0.3s, transform 0.2s;
+      outline: none;
+    }
+    #darkToggle:hover {
+      transform: scale(1.08);
+      box-shadow: 0 4px 18px rgba(0,0,0,0.16);
+    }
+    html.dark #darkToggle {
+      background: #1f2937;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06);
+    }
+
+    /* ═══════════ NAVBAR ═══════════ */
+    .navbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      height: 64px;
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(0,0,0,0.07);
+      display: flex;
+      align-items: center;
+      padding: 0 1.25rem;
+      gap: 1rem;
+      transition: background 0.4s ease, border-color 0.4s ease;
+    }
+    html.dark .navbar {
+      background: rgba(0,0,0,0.85);
+      border-bottom-color: rgba(255,255,255,0.07);
+    }
+    .navbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+    .nav-logo {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      background: var(--grad);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 800;
+      font-size: 0.85rem;
+      color: #fff;
+      letter-spacing: 0.5px;
+      flex-shrink: 0;
+    }
+    .nav-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 800;
+      font-size: 0.9rem;
+      color: #111827;
+      line-height: 1.15;
+    }
+    html.dark .nav-title { color: #f9fafb; }
+    .nav-subtitle {
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: var(--grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 0.15rem;
+      margin-left: auto;
+      list-style: none;
+    }
+    .nav-links a {
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #374151;
+      padding: 0.38rem 0.7rem;
+      border-radius: 8px;
+      transition: background 0.2s, color 0.2s;
+      white-space: nowrap;
+    }
+    .nav-links a:hover { background: #f3f4f6; color: #111827; }
+    .nav-links a.active {
+      background: var(--grad);
+      color: #fff !important;
+    }
+    html.dark .nav-links a { color: #d1d5db; }
+    html.dark .nav-links a:hover { background: #1f2937; color: #f9fafb; }
+
+    .nav-admin-link a {
+      background: linear-gradient(135deg, #fef3c7, #fde68a);
+      color: #92400e !important;
+      border: 1px solid #fcd34d;
+    }
+    .nav-admin-link a:hover {
+      background: linear-gradient(135deg, #fde68a, #fcd34d) !important;
+    }
+    html.dark .nav-admin-link a {
+      background: linear-gradient(135deg, #78350f, #92400e);
+      color: #fcd34d !important;
+      border-color: #92400e;
+    }
+
+    /* User chip */
+    .user-chip {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      background: #f3f4f6;
+      border-radius: 999px;
+      padding: 0.3rem 0.75rem 0.3rem 0.3rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #374151;
+      border: 1px solid #e5e7eb;
+      flex-shrink: 0;
+    }
+    html.dark .user-chip {
+      background: #1f2937;
+      color: #d1d5db;
+      border-color: #374151;
+    }
+    .user-chip-avatar {
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      background: var(--grad);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    /* Hamburger */
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 4.5px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 8px;
+      margin-left: auto;
+      transition: background 0.2s;
+    }
+    .hamburger:hover { background: #f3f4f6; }
+    html.dark .hamburger:hover { background: #1f2937; }
+    .hamburger span {
+      display: block;
+      width: 22px; height: 2px;
+      background: #374151;
+      border-radius: 2px;
+      transition: transform 0.3s, opacity 0.3s;
+    }
+    html.dark .hamburger span { background: #d1d5db; }
+    .hamburger.open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+    .hamburger.open span:nth-child(2) { opacity: 0; }
+    .hamburger.open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+
+    /* Mobile nav drawer */
+    .mobile-nav {
+      display: none;
+      position: fixed;
+      top: 64px; left: 0; right: 0;
+      background: rgba(255,255,255,0.97);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+      z-index: 99;
+      padding: 0.75rem 1rem 1rem;
+      flex-direction: column;
+      gap: 0.3rem;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+      max-height: calc(100vh - 64px);
+      overflow-y: auto;
+    }
+    html.dark .mobile-nav {
+      background: rgba(0,0,0,0.97);
+      border-bottom-color: rgba(255,255,255,0.08);
+    }
+    .mobile-nav.open { display: flex; }
+    .mobile-nav a {
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #374151;
+      padding: 0.65rem 0.9rem;
+      border-radius: 10px;
+      transition: background 0.2s, color 0.2s;
+    }
+    .mobile-nav a:hover { background: #f3f4f6; color: #111827; }
+    .mobile-nav a.active {
+      background: var(--grad);
+      color: #fff !important;
+    }
+    html.dark .mobile-nav a { color: #d1d5db; }
+    html.dark .mobile-nav a:hover { background: #1f2937; color: #f9fafb; }
+
+    /* ═══════════ LAYOUT ═══════════ */
+    .page-wrap {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1.5rem 1rem 3rem;
+      display: flex;
+      flex-direction: column;
+    }
+
+    main {
+      padding-top: 80px;
+    }
+
+    /* ═══════════ PAGE HEADER ═══════════ */
+    .page-header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+      padding-top: 1rem;
+    }
+    .page-header h1 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 800;
+      color: #111827;
+      line-height: 1.15;
+      margin-bottom: 0.6rem;
+    }
+    html.dark .page-header h1 { color: #f9fafb; }
+    .page-header .subtitle {
+      font-size: 1rem;
+      font-weight: 500;
+      background: var(--grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      max-width: 500px;
+      margin: 0 auto;
+      line-height: 1.55;
+    }
+    .header-accent {
+      width: 56px;
+      height: 4px;
+      background: var(--grad);
+      border-radius: 2px;
+      margin: 1rem auto 0;
+    }
+
+    /* ═══════════ CARDS ═══════════ */
+    .card {
+      background: #ffffff;
+      border-radius: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.04);
+      transition: background 0.4s ease, box-shadow 0.4s ease;
+      overflow: hidden;
+    }
+    html.dark .card {
+      background: #111827;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.4), 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05);
+    }
+    .card-accent {
+      height: 3px;
+      background: var(--grad);
+      width: 100%;
+    }
+
+    /* ═══════════ BUTTONS ═══════════ */
+    .btn-primary {
+      border: none;
+      border-radius: 12px;
+      background: var(--grad);
+      color: #fff;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(139,92,246,0.35);
+      transition: box-shadow 0.25s, transform 0.15s;
+      outline: none;
+      padding: 0 1.5rem;
+      height: 48px;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--grad-h);
+      opacity: 0;
+      transition: opacity 0.25s;
+    }
+    .btn-primary:hover::before { opacity: 1; }
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(139,92,246,0.4);
+    }
+    .btn-primary:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 8px rgba(139,92,246,0.3);
+    }
+    .btn-primary:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .btn-primary span { position: relative; z-index: 1; }
+
+    .btn-secondary {
+      border: 1.5px solid #e5e7eb;
+      border-radius: 12px;
+      background: #fff;
+      color: #374151;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+      outline: none;
+      padding: 0 1.25rem;
+      height: 42px;
+    }
+    .btn-secondary:hover {
+      background: #f9fafb;
+      border-color: #d1d5db;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+      transform: translateY(-1px);
+    }
+    .btn-secondary:active { transform: translateY(0); }
+    html.dark .btn-secondary {
+      background: #1f2937;
+      border-color: #374151;
+      color: #e5e7eb;
+    }
+    html.dark .btn-secondary:hover {
+      background: #111827;
+      border-color: #4b5563;
+    }
+
+    /* ═══════════ FORM INPUTS ═══════════ */
+    .field { margin-bottom: 1rem; }
+    .field-label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #374151;
+      margin-bottom: 5px;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+    html.dark .field-label { color: #9ca3af; }
+
+    .input-wrap { position: relative; }
+    .input-icon {
+      position: absolute;
+      left: 13px; top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.95rem;
+      pointer-events: none;
+      opacity: 0.55;
+    }
+    .form-input {
+      width: 100%;
+      height: 46px;
+      padding: 0 14px 0 40px;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 12px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: #111827;
+      background: #f9fafb;
+      outline: none;
+      transition: border-color 0.25s, background 0.25s, box-shadow 0.25s;
+    }
+    .form-input::placeholder { color: #9ca3af; font-weight: 400; }
+    .form-input:focus {
+      border-color: #8b5cf6;
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(139,92,246,0.12);
+    }
+    html.dark .form-input {
+      background: #1f2937;
+      border-color: #374151;
+      color: #f9fafb;
+    }
+    html.dark .form-input::placeholder { color: #4b5563; }
+    html.dark .form-input:focus {
+      border-color: #8b5cf6;
+      background: #111827;
+      box-shadow: 0 0 0 3px rgba(139,92,246,0.18);
+    }
+
+    /* ═══════════ GALLERY SPECIFIC ═══════════ */
+    .gallery-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .filter-tabs {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .filter-tab {
+      padding: 0.4rem 1rem;
+      border-radius: 999px;
+      border: 1.5px solid #e5e7eb;
+      background: #fff;
+      color: #374151;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .filter-tab:hover {
+      border-color: #8b5cf6;
+      color: #8b5cf6;
+    }
+    .filter-tab.active {
+      background: var(--grad);
+      border-color: transparent;
+      color: #fff;
+    }
+    html.dark .filter-tab {
+      background: #1f2937;
+      border-color: #374151;
+      color: #d1d5db;
+    }
+    html.dark .filter-tab:hover {
+      border-color: #8b5cf6;
+      color: #a78bfa;
+    }
+    html.dark .filter-tab.active {
+      color: #fff;
+      border-color: transparent;
+    }
+
+    /* Masonry grid */
+    .photo-grid {
+      columns: 3;
+      column-gap: 1.25rem;
+    }
+    @media (max-width: 900px) {
+      .photo-grid { columns: 2; }
+    }
+    @media (max-width: 560px) {
+      .photo-grid { columns: 1; }
+    }
+
+    .photo-card {
+      break-inside: avoid;
+      margin-bottom: 1.25rem;
+      border-radius: 16px;
+      overflow: hidden;
+      position: relative;
+      cursor: pointer;
+      border: 1px solid rgba(0,0,0,0.07);
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      background: #fff;
+    }
+    html.dark .photo-card {
+      border-color: rgba(255,255,255,0.07);
+      background: #111827;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+    }
+    .photo-card:hover {
+      transform: translateY(-4px) scale(1.01);
+      box-shadow: 0 12px 32px rgba(0,0,0,0.15);
+    }
+    html.dark .photo-card:hover {
+      box-shadow: 0 12px 32px rgba(0,0,0,0.6);
+    }
+    .photo-card img {
+      width: 100%;
+      display: block;
+      object-fit: cover;
+      transition: transform 0.4s ease;
+      min-height: 160px;
+      background: #f3f4f6;
+    }
+    html.dark .photo-card img { background: #1f2937; }
+    .photo-card:hover img { transform: scale(1.04); }
+
+    .photo-caption-overlay {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.5) 60%, transparent 100%);
+      padding: 1.5rem 1rem 0.85rem;
+      transform: translateY(4px);
+      opacity: 0;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    .photo-card:hover .photo-caption-overlay {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .photo-caption-text {
+      color: #fff;
+      font-size: 0.85rem;
+      font-weight: 600;
+      line-height: 1.4;
+      margin-bottom: 0.25rem;
+    }
+    .photo-caption-meta {
+      color: rgba(255,255,255,0.7);
+      font-size: 0.72rem;
+      font-weight: 500;
+    }
+
+    .photo-badge {
+      position: absolute;
+      top: 0.6rem;
+      right: 0.6rem;
+      background: var(--grad);
+      color: #fff;
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 0.2rem 0.55rem;
+      border-radius: 999px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    /* Admin delete button on photo card */
+    .photo-delete-btn {
+      position: absolute;
+      top: 0.6rem;
+      left: 0.6rem;
+      background: rgba(239,68,68,0.9);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 30px; height: 30px;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      transition: background 0.2s, transform 0.15s;
+      z-index: 5;
+    }
+    .photo-delete-btn:hover {
+      background: rgba(220,38,38,1);
+      transform: scale(1.1);
+    }
+    .can-delete .photo-delete-btn { display: flex; }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: #9ca3af;
+    }
+    .empty-state-icon {
+      font-size: 3.5rem;
+      margin-bottom: 1rem;
+      opacity: 0.5;
+    }
+    .empty-state h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #374151;
+      margin-bottom: 0.4rem;
+    }
+    html.dark .empty-state h3 { color: #d1d5db; }
+    .empty-state p {
+      font-size: 0.88rem;
+    }
+
+    /* Loading skeleton */
+    .skeleton-grid {
+      columns: 3;
+      column-gap: 1.25rem;
+    }
+    @media (max-width: 900px) { .skeleton-grid { columns: 2; } }
+    @media (max-width: 560px) { .skeleton-grid { columns: 1; } }
+
+    .skeleton-card {
+      break-inside: avoid;
+      margin-bottom: 1.25rem;
+      border-radius: 16px;
+      overflow: hidden;
+      background: #f3f4f6;
+      animation: shimmer 1.5s infinite;
+    }
+    html.dark .skeleton-card { background: #1f2937; }
+    .skeleton-card:nth-child(1) { height: 220px; }
+    .skeleton-card:nth-child(2) { height: 300px; }
+    .skeleton-card:nth-child(3) { height: 180px; }
+    .skeleton-card:nth-child(4) { height: 260px; }
+    .skeleton-card:nth-child(5) { height: 200px; }
+    .skeleton-card:nth-child(6) { height: 240px; }
+
+    @keyframes shimmer {
+      0%   { opacity: 1; }
+      50%  { opacity: 0.5; }
+      100% { opacity: 1; }
+    }
+
+    /* ═══════════ UPLOAD MODAL ═══════════ */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(4px);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .modal-box {
+      background: #fff;
+      border-radius: 24px;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.2);
+      width: 100%;
+      max-width: 480px;
+      transform: scale(0.95) translateY(16px);
+      transition: transform 0.3s;
+      overflow: hidden;
+    }
+    html.dark .modal-box {
+      background: #111827;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+    }
+    .modal-overlay.open .modal-box {
+      transform: scale(1) translateY(0);
+    }
+    .modal-header {
+      padding: 1.4rem 1.5rem 1rem;
+      border-bottom: 1px solid #f3f4f6;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    html.dark .modal-header { border-bottom-color: #1f2937; }
+    .modal-header h2 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #111827;
+    }
+    html.dark .modal-header h2 { color: #f9fafb; }
+    .modal-close {
+      background: #f3f4f6;
+      border: none;
+      border-radius: 50%;
+      width: 32px; height: 32px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      color: #374151;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .modal-close:hover { background: #e5e7eb; transform: scale(1.08); }
+    html.dark .modal-close { background: #1f2937; color: #d1d5db; }
+    html.dark .modal-close:hover { background: #374151; }
+    .modal-body { padding: 1.25rem 1.5rem 1.5rem; }
+
+    /* File drop zone */
+    .file-dropzone {
+      border: 2px dashed #d1d5db;
+      border-radius: 16px;
+      padding: 2rem 1rem;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.25s, background 0.25s;
+      margin-bottom: 1rem;
+      position: relative;
+    }
+    .file-dropzone:hover, .file-dropzone.dragover {
+      border-color: #8b5cf6;
+      background: rgba(139,92,246,0.04);
+    }
+    html.dark .file-dropzone { border-color: #374151; }
+    html.dark .file-dropzone:hover, html.dark .file-dropzone.dragover {
+      border-color: #8b5cf6;
+      background: rgba(139,92,246,0.08);
+    }
+    .file-dropzone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+    .dropzone-icon { font-size: 2rem; margin-bottom: 0.5rem; opacity: 0.6; }
+    .dropzone-text { font-size: 0.88rem; font-weight: 600; color: #374151; }
+    html.dark .dropzone-text { color: #d1d5db; }
+    .dropzone-sub { font-size: 0.75rem; color: #9ca3af; margin-top: 0.3rem; }
+    .file-preview-name {
+      font-size: 0.8rem;
+      color: #6366f1;
+      font-weight: 600;
+      margin-top: 0.5rem;
+    }
+
+    /* Progress bar */
+    .progress-bar-wrap {
+      background: #f3f4f6;
+      border-radius: 999px;
+      height: 8px;
+      margin-top: 1rem;
+      overflow: hidden;
+      display: none;
+    }
+    html.dark .progress-bar-wrap { background: #1f2937; }
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--grad);
+      border-radius: 999px;
+      transition: width 0.3s ease;
+      width: 0%;
+    }
+    .progress-label {
+      font-size: 0.75rem;
+      color: #6b7280;
+      margin-top: 0.35rem;
+      text-align: center;
+      display: none;
+    }
+
+    /* ═══════════ LIGHTBOX ═══════════ */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.92);
+      z-index: 300;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+      padding: 1rem;
+    }
+    .lightbox-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .lightbox-content {
+      position: relative;
+      max-width: 900px;
+      width: 100%;
+      text-align: center;
+    }
+    .lightbox-img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 16px;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+      object-fit: contain;
+      display: block;
+      margin: 0 auto;
+    }
+    .lightbox-caption {
+      color: #fff;
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-top: 1rem;
+    }
+    .lightbox-meta {
+      color: rgba(255,255,255,0.6);
+      font-size: 0.78rem;
+      margin-top: 0.3rem;
+    }
+    .lightbox-close {
+      position: absolute;
+      top: -3rem;
+      right: 0;
+      background: rgba(255,255,255,0.15);
+      border: none;
+      border-radius: 50%;
+      width: 38px; height: 38px;
+      color: #fff;
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+    .lightbox-close:hover { background: rgba(255,255,255,0.25); }
+    .lightbox-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255,255,255,0.15);
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      color: #fff;
+      font-size: 1.2rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+    .lightbox-nav:hover { background: rgba(255,255,255,0.28); }
+    .lightbox-prev { left: -3.5rem; }
+    .lightbox-next { right: -3.5rem; }
+    @media (max-width: 700px) {
+      .lightbox-prev { left: 0.25rem; }
+      .lightbox-next { right: 0.25rem; }
+    }
+
+    /* ═══════════ STATS STRIP ═══════════ */
+    .stats-strip {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 2rem;
+    }
+    .stat-pill {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 999px;
+      padding: 0.45rem 1rem;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #374151;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    html.dark .stat-pill {
+      background: #111827;
+      border-color: #374151;
+      color: #d1d5db;
+    }
+    .stat-pill-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--grad);
+      flex-shrink: 0;
+    }
+
+    /* ═══════════ FOOTER ═══════════ */
+    .site-footer {
+      background: #111827;
+      color: #9ca3af;
+      padding: 2.5rem 1.5rem 1.5rem;
+      margin-top: 4rem;
+    }
+    html.dark .site-footer {
+      background: #000;
+      border-top: 1px solid #1f2937;
+    }
+    .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .footer-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 0.7rem;
+    }
+    .footer-logo {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      background: var(--grad);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 800;
+      font-size: 0.75rem;
+      color: #fff;
+    }
+    .footer-name {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: #f9fafb;
+    }
+    .footer-desc {
+      font-size: 0.8rem;
+      line-height: 1.6;
+      margin-bottom: 1.5rem;
+      max-width: 380px;
+    }
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+    .footer-links a {
+      font-size: 0.8rem;
+      color: #6b7280;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: #a78bfa; }
+    .footer-bottom {
+      border-top: 1px solid #1f2937;
+      padding-top: 1rem;
+      font-size: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    html.dark .footer-bottom { border-top-color: #374151; }
+    .footer-grad-text {
+      background: var(--grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-weight: 600;
+    }
+
+    /* ═══════════ TOAST ═══════════ */
+    #toast-container {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      pointer-events: none;
+    }
+    .toast {
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.06);
+      padding: 0.85rem 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      min-width: 240px;
+      max-width: 340px;
+      pointer-events: all;
+      animation: toastIn 0.35s cubic-bezier(0.34,1.56,0.64,1);
+      border-left: 4px solid #8b5cf6;
+    }
+    html.dark .toast {
+      background: #1f2937;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    }
+    .toast.success { border-left-color: #10b981; }
+    .toast.error   { border-left-color: #ef4444; }
+    .toast.info    { border-left-color: #6366f1; }
+    .toast-icon { font-size: 1.1rem; flex-shrink: 0; }
+    .toast-msg {
+      font-size: 0.84rem;
+      font-weight: 600;
+      color: #111827;
+      line-height: 1.4;
+    }
+    html.dark .toast-msg { color: #f9fafb; }
+    .toast-dismiss {
+      margin-left: auto;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #9ca3af;
+      font-size: 0.9rem;
+      padding: 0;
+      flex-shrink: 0;
+      transition: color 0.2s;
+    }
+    .toast-dismiss:hover { color: #374151; }
+    html.dark .toast-dismiss:hover { color: #f9fafb; }
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateX(32px) scale(0.94); }
+      to   { opacity: 1; transform: translateX(0) scale(1); }
+    }
+    .toast.hiding {
+      animation: toastOut 0.28s ease forwards;
+    }
+    @keyframes toastOut {
+      to { opacity: 0; transform: translateX(32px) scale(0.92); }
+    }
+
+    /* ═══════════ UTILITIES ═══════════ */
+    .flex-center { display: flex; align-items: center; justify-content: center; }
+    .text-gradient {
+      background: var(--grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ═══════════ RESPONSIVE ═══════════ */
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .hamburger { display: flex; }
+      .user-chip { display: none; }
+      .gallery-controls {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .lightbox-prev { left: 0; }
+      .lightbox-next { right: 0; }
+    }
+    @media (min-width: 769px) {
+      .hamburger { display: none; }
+    }
+
+    /* Image load animation */
+    .photo-card img {
+      opacity: 0;
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+    .photo-card img.loaded {
+      opacity: 1;
+    }
+  </style>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<!-- ══════════════ DARK MODE TOGGLE ══════════════ -->
+<button id="darkToggle" title="Toggle dark mode" aria-label="Toggle dark mode">🌙</button>
+
+<!-- ══════════════ NAVBAR ══════════════ -->
+<nav class="navbar" role="navigation" aria-label="Main navigation">
+  <a href="Home.html" class="navbar-brand">
+    <div class="nav-logo">BCA</div>
+    <div>
+      <div class="nav-title">Sri Aurobindo</div>
+      <div class="nav-subtitle">BCA Department</div>
+    </div>
+  </a>
+
+  <!-- Desktop Nav Links -->
+  <ul class="nav-links" id="navLinks">
+    <li><a href="Home.html">Home</a></li>
+    <li><a href="resources.html">Resources</a></li>
+    <li><a href="upload.html">Upload</a></li>
+    <li><a href="profile.html">Profile</a></li>
+    <li><a href="events.html">Events</a></li>
+    <li><a href="Home.html">Campus Hub</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="gallery.html" class="active">Gallery</a></li>
+    <li id="adminNavItem" style="display:none" class="nav-admin-link"><a href="admin.html">⚙️ Admin</a></li>
+  </ul>
+
+  <!-- User Chip (desktop) -->
+  <div class="user-chip" id="userChip" style="display:none">
+    <div class="user-chip-avatar" id="userChipAvatar">?</div>
+    <span id="userChipName">Loading…</span>
+  </div>
+
+  <!-- Logout Button (desktop) -->
+  <button class="btn-logout" id="logoutBtn" style="display:none;" onclick="handleLogout()">Logout</button>
+
+  <!-- Hamburger (mobile) -->
+  <button class="hamburger" id="hamburger" aria-label="Toggle menu" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- Mobile Nav Drawer -->
+<div class="mobile-nav" id="mobileNav" role="navigation" aria-label="Mobile navigation">
+  <a href="Home.html">🏠 Home</a>
+  <a href="resources.html">📚 Resources</a>
+  <a href="upload.html">⬆️ Upload</a>
+  <a href="profile.html">👤 Profile</a>
+  <a href="events.html">📅 Events</a>
+  <a href="Home.html">🏫 Campus Hub</a>
+  <a href="about.html">ℹ️ About</a>
+  <a href="gallery.html" class="active">🖼️ Gallery</a>
+  <a href="admin.html" id="mobileAdminLink" style="display:none">⚙️ Admin</a>
+  <button onclick="handleLogout()" style="margin-top:0.3rem;width:100%;text-align:left;padding:0.65rem 0.9rem;border:none;border-radius:10px;background:#fff5f5;color:#ef4444;font-family:'Inter',sans-serif;font-size:0.88rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:0.5rem;transition:background 0.2s;" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='#fff5f5'">🚪 Sign Out</button>
+</div>
+
+<!-- ══════════════ MAIN CONTENT ══════════════ -->
+<main>
+  <div class="page-wrap">
+
+    <!-- Page Header -->
+    <div class="page-header">
+      <h1>🖼️ Gallery</h1>
+      <p class="subtitle">Capturing moments from our college and department events</p>
+      <div class="header-accent"></div>
+    </div>
+
+    <!-- Controls Row -->
+    <div class="gallery-controls">
+      <!-- Stats -->
+      <div class="stats-strip" id="statsStrip">
+        <div class="stat-pill">
+          <div class="stat-pill-dot"></div>
+          <span id="totalCount">0 Photos</span>
+        </div>
+        <div class="stat-pill">
+          <div class="stat-pill-dot"></div>
+          <span id="recentLabel">Updated recently</span>
+        </div>
+      </div>
+
+      <!-- Upload Button (admin/lecturer only) -->
+      <button class="btn-primary" id="uploadBtn" style="display:none" onclick="openUploadModal()">
+        <span>📷 Upload Photo</span>
+      </button>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="filter-tabs" id="filterTabs" style="margin-bottom:1.5rem">
+      <button class="filter-tab active" data-filter="all">All Photos</button>
+      <button class="filter-tab" data-filter="events">Events</button>
+      <button class="filter-tab" data-filter="campus">Campus</button>
+      <button class="filter-tab" data-filter="department">Department</button>
+    </div>
+
+    <!-- Loading Skeletons -->
+    <div class="skeleton-grid" id="skeletonGrid">
+      <div class="skeleton-card"></div>
+      <div class="skeleton-card"></div>
+      <div class="skeleton-card"></div>
+      <div class="skeleton-card"></div>
+      <div class="skeleton-card"></div>
+      <div class="skeleton-card"></div>
+    </div>
+
+    <!-- Photo Grid -->
+    <div class="photo-grid" id="photoGrid" style="display:none"></div>
+
+    <!-- Empty State -->
+    <div class="empty-state" id="emptyState" style="display:none">
+      <div class="empty-state-icon">📷</div>
+      <h3>No photos yet</h3>
+      <p>Be the first to upload a memorable moment!</p>
+    </div>
+
+  </div>
+</main>
+
+<!-- ══════════════ FOOTER ══════════════ -->
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="footer-logo">BCA</div>
+      <div class="footer-name">Sri Aurobindo College — BCA Dept.</div>
+    </div>
+    <p class="footer-desc">Empowering future tech leaders through quality education, innovation, and a vibrant campus community.</p>
+    <div class="footer-links">
+      <a href="Home.html">Home</a>
+      <a href="about.html">About</a>
+      <a href="gallery.html">Gallery</a>
+      <a href="events.html">Events</a>
+      <a href="resources.html">Resources</a>
+      <a href="Home.html">Campus Hub</a>
+      <a href="profile.html">Profile</a>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Sri Aurobindo College — BCA Department. All rights reserved.</span>
+      <span class="footer-grad-text">Made with ❤️ by BCA Students</span>
+    </div>
+  </div>
+</footer>
+
+<!-- ══════════════ UPLOAD MODAL ══════════════ -->
+<div class="modal-overlay" id="uploadModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal-box">
+    <div class="card-accent"></div>
+    <div class="modal-header">
+      <h2 id="modalTitle">📷 Upload Photo</h2>
+      <button class="modal-close" onclick="closeUploadModal()" aria-label="Close modal">✕</button>
+    </div>
+    <div class="modal-body">
+      <!-- File Drop Zone -->
+      <div class="file-dropzone" id="dropzone">
+        <input type="file" id="photoFile" accept="image/*" onchange="handleFileSelect(this)"/>
+        <div class="dropzone-icon">🖼️</div>
+        <div class="dropzone-text">Click or drag & drop an image here</div>
+        <div class="dropzone-sub">JPG, PNG, WEBP, GIF — max 10MB</div>
+        <div class="file-preview-name" id="filePreviewName"></div>
+      </div>
+
+      <!-- Image preview -->
+      <div id="imgPreviewWrap" style="display:none;margin-bottom:1rem;text-align:center">
+        <img id="imgPreview" src="" alt="Preview" style="max-height:180px;max-width:100%;border-radius:12px;object-fit:cover;border:2px solid #e5e7eb;"/>
+      </div>
+
+      <!-- Caption -->
+      <div class="field">
+        <label class="field-label" for="photoCaption">Caption</label>
+        <div class="input-wrap">
+          <span class="input-icon">✏️</span>
+          <input type="text" id="photoCaption" class="form-input" placeholder="e.g. Annual Tech Fest 2025 – Team Presentation" maxlength="120"/>
+        </div>
+      </div>
+
+      <!-- Category -->
+      <div class="field">
+        <label class="field-label" for="photoCategory">Category</label>
+        <div class="input-wrap">
+          <span class="input-icon">🏷️</span>
+          <select id="photoCategory" class="form-input" style="appearance:none;cursor:pointer;">
+            <option value="events">Events</option>
+            <option value="campus">Campus</option>
+            <option value="department">Department</option>
+            <option value="all">General</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Progress -->
+      <div class="progress-bar-wrap" id="progressWrap">
+        <div class="progress-bar-fill" id="progressFill"></div>
+      </div>
+      <div class="progress-label" id="progressLabel">Uploading… 0%</div>
+
+      <!-- Actions -->
+      <div style="display:flex;gap:0.75rem;margin-top:1.25rem">
+        <button class="btn-secondary" onclick="closeUploadModal()" style="flex:1">Cancel</button>
+        <button class="btn-primary" id="submitUploadBtn" onclick="submitUpload()" style="flex:2">
+          <span id="submitBtnText">📤 Upload Photo</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ LIGHTBOX ══════════════ -->
+<div class="lightbox-overlay" id="lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer">
+  <div class="lightbox-content">
+    <button class="lightbox-close" onclick="closeLightbox()" aria-label="Close">✕</button>
+    <button class="lightbox-nav lightbox-prev" onclick="lightboxNav(-1)" aria-label="Previous photo">‹</button>
+    <img class="lightbox-img" id="lightboxImg" src="" alt="Gallery photo"/>
+    <button class="lightbox-nav lightbox-next" onclick="lightboxNav(1)" aria-label="Next photo">›</button>
+    <div class="lightbox-caption" id="lightboxCaption"></div>
+    <div class="lightbox-meta" id="lightboxMeta"></div>
+  </div>
+</div>
+
+<!-- ══════════════ TOAST CONTAINER ══════════════ -->
+<div id="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+<!-- ══════════════ FIREBASE & APP LOGIC ══════════════ -->
+<script>
+// ══════════════════════════════════════════════════
+//  FIREBASE CONFIG — replace with your actual config
+// ══════════════════════════════════════════════════
+const firebaseConfig = {
+  apiKey: "AIzaSyCX5g8sPw_iG0HMujrZM8dG7w510c6jpC4",
+  authDomain: "campus-hub-2220b.firebaseapp.com",
+  projectId: "campus-hub-2220b",
+  storageBucket: "campus-hub-2220b.firebasestorage.app",
+  messagingSenderId: "371742140259",
+  appId: "1:371742140259:web:55a2b29fd269689abb5556"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db   = firebase.firestore();
+const storage = firebase.storage();
+
+// ══════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════
+let currentUser    = null;
+let currentRole    = null;
+let currentUserName = '';
+let allPhotos      = [];          // full list from Firestore
+let filteredPhotos = [];          // after filter
+let lightboxIndex  = 0;
+let unsubGallery   = null;
+let currentFilter  = 'all';
+let selectedFile   = null;
+
+// ══════════════════════════════════════════════════
+//  PLACEHOLDERS (shown when Firestore gallery is empty)
+// ══════════════════════════════════════════════════
+const PLACEHOLDER_PHOTOS = [
+  { id:'ph1', imageUrl:'https://placehold.co/400x280/6366f1/ffffff?text=Annual+Tech+Fest', caption:'Annual Tech Fest 2024 – Main Stage', uploadedBy:'Dept. Admin', category:'events', createdAt: { toDate: () => new Date('2024-11-10') } },
+  { id:'ph2', imageUrl:'https://placehold.co/400x500/ec4899/ffffff?text=Hackathon+2024', caption:'24-Hour Hackathon Winners', uploadedBy:'Dept. Admin', category:'events', createdAt: { toDate: () => new Date('2024-10-05') } },
+  { id:'ph3', imageUrl:'https://placehold.co/400x300/8b5cf6/ffffff?text=Campus+View', caption:'College Campus – Morning View', uploadedBy:'Dept. Admin', category:'campus', createdAt: { toDate: () => new Date('2024-09-20') } },
+  { id:'ph4', imageUrl:'https://placehold.co/400x350/10b981/ffffff?text=Convocation+2024', caption:'Convocation Ceremony 2024', uploadedBy:'Dept. Admin', category:'events', createdAt: { toDate: () => new Date('2024-08-15') } },
+  { id:'ph5', imageUrl:'https://placehold.co/400x260/f59e0b/ffffff?text=Computer+Lab', caption:'BCA Computer Lab – Practical Session', uploadedBy:'Dept. Admin', category:'department', createdAt: { toDate: () => new Date('2024-07-22') } },
+  { id:'ph6', imageUrl:'https://placehold.co/400x450/ef4444/ffffff?text=Cultural+Fest', caption:'Cultural Fest – Dance Performance', uploadedBy:'Dept. Admin', category:'events', createdAt: { toDate: () => new Date('2024-06-30') } },
+  { id:'ph7', imageUrl:'https://placehold.co/400x320/0ea5e9/ffffff?text=Seminar+Hall', caption:'National Level Seminar – Guest Lecture', uploadedBy:'Dept. Admin', category:'department', createdAt: { toDate: () => new Date('2024-05-12') } },
+  { id:'ph8', imageUrl:'https://placehold.co/400x240/7c3aed/ffffff?text=Sports+Day', caption:'Sports Day – 100m Dash Event', uploadedBy:'Dept. Admin', category:'campus', createdAt: { toDate: () => new Date('2024-04-18') } },
+  { id:'ph9', imageUrl:'https://placehold.co/400x380/db2777/ffffff?text=Project+Expo', caption:'Final Year Project Exposition', uploadedBy:'Dept. Admin', category:'department', createdAt: { toDate: () => new Date('2024-03-05') } },
+];
+
+// ══════════════════════════════════════════════════
+//  DARK MODE
+// ══════════════════════════════════════════════════
+(function initDark() {
+  const saved = localStorage.getItem('darkMode');
+  if (saved === 'true' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    document.documentElement.classList.add('dark');
+    document.getElementById('darkToggle').textContent = '☀️';
+  }
+})();
+
+document.getElementById('darkToggle').addEventListener('click', () => {
+  const isDark = document.documentElement.classList.toggle('dark');
+  document.getElementById('darkToggle').textContent = isDark ? '☀️' : '🌙';
+  localStorage.setItem('darkMode', isDark);
+});
+
+// ══════════════════════════════════════════════════
+//  HAMBURGER / MOBILE NAV
+// ══════════════════════════════════════════════════
+const hamburger = document.getElementById('hamburger');
+const mobileNav = document.getElementById('mobileNav');
+hamburger.addEventListener('click', () => {
+  const open = mobileNav.classList.toggle('open');
+  hamburger.classList.toggle('open', open);
+  hamburger.setAttribute('aria-expanded', open);
+});
+document.addEventListener('click', (e) => {
+  if (!hamburger.contains(e.target) && !mobileNav.contains(e.target)) {
+    mobileNav.classList.remove('open');
+    hamburger.classList.remove('open');
+    hamburger.setAttribute('aria-expanded', false);
+  }
+});
+
+// ══════════════════════════════════════════════════
+//  TOAST SYSTEM
+// ══════════════════════════════════════════════════
+function showToast(msg, type = 'info', duration = 4000) {
+  const icons = { success: '✅', error: '❌', info: 'ℹ️', warning: '⚠️' };
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `
+    <span class="toast-icon">${icons[type] || 'ℹ️'}</span>
+    <span class="toast-msg">${msg}</span>
+    <button class="toast-dismiss" onclick="dismissToast(this.parentElement)" aria-label="Dismiss">✕</button>
+  `;
+  container.appendChild(toast);
+  if (duration > 0) setTimeout(() => dismissToast(toast), duration);
+}
+function dismissToast(el) {
+  if (!el || el.classList.contains('hiding')) return;
+  el.classList.add('hiding');
+  setTimeout(() => el.remove(), 300);
+}
+
+// ══════════════════════════════════════════════════
+//  AUTH & ROLE CHECK
+// ══════════════════════════════════════════════════
+auth.onAuthStateChanged(async (user) => {
+  if (!user) {
+    showToast('Please sign in to view the Gallery.', 'error');
+    setTimeout(() => window.location.href = 'index.html', 1800);
+    return;
+  }
+  currentUser = user;
+
+  try {
+    const snap = await db.collection('users').doc(user.uid).get();
+    if (snap.exists) {
+      const data = snap.data();
+      currentRole     = (data.role || 'student').toLowerCase();
+      currentUserName = data.name || data.displayName || user.displayName || user.email.split('@')[0];
+    } else {
+      currentRole     = 'student';
+      currentUserName = user.displayName || user.email.split('@')[0];
+    }
+  } catch (e) {
+    currentRole     = 'student';
+    currentUserName = user.displayName || user.email.split('@')[0];
+  }
+
+  // Update user chip
+  const chipEl     = document.getElementById('userChip');
+  const chipAvatar = document.getElementById('userChipAvatar');
+  const chipName   = document.getElementById('userChipName');
+  chipEl.style.display = 'flex';
+  chipAvatar.textContent = currentUserName.charAt(0).toUpperCase();
+  chipName.textContent   = currentUserName.length > 14 ? currentUserName.slice(0,14)+'…' : currentUserName;
+
+  // Show logout button
+  const logoutBtn = document.getElementById('logoutBtn');
+  logoutBtn.style.display = 'inline-flex';
+
+  // Admin nav links
+  if (currentRole?.toLowerCase() === 'admin') {
+    document.getElementById('adminNavItem').style.display = '';
+    document.getElementById('mobileAdminLink').style.display = '';
+  }
+
+  // Upload button visibility
+  if (currentRole?.toLowerCase() === 'admin' || currentRole?.toLowerCase() === 'lecturer') {
+    document.getElementById('uploadBtn').style.display = 'inline-flex';
+  }
+
+  // Start listening to gallery
+  initGalleryListener();
+});
+
+// ══════════════════════════════════════════════════
+//  FIRESTORE REAL-TIME LISTENER
+// ══════════════════════════════════════════════════
+function initGalleryListener() {
+  if (unsubGallery) unsubGallery();
+
+  unsubGallery = db.collection('gallery')
+    .orderBy('createdAt', 'desc')
+    .onSnapshot((snapshot) => {
+      const skeleton = document.getElementById('skeletonGrid');
+      skeleton.style.display = 'none';
+
+      let docs = [];
+      snapshot.forEach(doc => docs.push({ id: doc.id, ...doc.data() }));
+
+      // Use placeholders if empty
+      if (docs.length === 0) {
+        allPhotos = PLACEHOLDER_PHOTOS;
+      } else {
+        allPhotos = docs;
+      }
+
+      // Update stats
+      document.getElementById('totalCount').textContent = `${allPhotos.length} Photo${allPhotos.length !== 1 ? 's' : ''}`;
+      if (allPhotos.length > 0 && allPhotos[0].createdAt) {
+        try {
+          const d = allPhotos[0].createdAt.toDate ? allPhotos[0].createdAt.toDate() : new Date(allPhotos[0].createdAt);
+          document.getElementById('recentLabel').textContent = 'Last added: ' + d.toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
+        } catch(e) {}
+      }
+
+      applyFilter(currentFilter);
+    }, (err) => {
+      console.error('Gallery listener error:', err);
+      // Fallback to placeholders on error
+      document.getElementById('skeletonGrid').style.display = 'none';
+      allPhotos = PLACEHOLDER_PHOTOS;
+      applyFilter(currentFilter);
+      showToast('Using sample photos — Firestore unavailable.', 'warning');
+    });
+}
+
+// ══════════════════════════════════════════════════
+//  FILTER TABS
+// ══════════════════════════════════════════════════
+document.getElementById('filterTabs').addEventListener('click', (e) => {
+  const btn = e.target.closest('.filter-tab');
+  if (!btn) return;
+  document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  currentFilter = btn.dataset.filter;
+  applyFilter(currentFilter);
+});
+
+function applyFilter(filter) {
+  if (filter === 'all') {
+    filteredPhotos = [...allPhotos];
+  } else {
+    filteredPhotos = allPhotos.filter(p => {
+      const cat = (p.category || '').toLowerCase();
+      return cat === filter;
+    });
+  }
+  renderGallery();
+}
+
+// ══════════════════════════════════════════════════
+//  RENDER GALLERY
+// ══════════════════════════════════════════════════
+function renderGallery() {
+  const grid       = document.getElementById('photoGrid');
+  const emptyState = document.getElementById('emptyState');
+
+  grid.innerHTML = '';
+
+  if (filteredPhotos.length === 0) {
+    grid.style.display = 'none';
+    emptyState.style.display = 'block';
+    return;
+  }
+
+  emptyState.style.display = 'none';
+  grid.style.display = '';
+
+  const canManage = currentRole?.toLowerCase() === 'admin' || currentRole?.toLowerCase() === 'lecturer';
+
+  filteredPhotos.forEach((photo, idx) => {
+    const card = document.createElement('div');
+    card.className = 'photo-card' + (canManage ? ' can-delete' : '');
+    card.dataset.idx = idx;
+
+    let dateStr = '';
+    try {
+      const d = photo.createdAt && photo.createdAt.toDate
+        ? photo.createdAt.toDate()
+        : (photo.createdAt ? new Date(photo.createdAt) : new Date());
+      dateStr = d.toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
+    } catch(e) { dateStr = ''; }
+
+    const isPH = photo.id && photo.id.startsWith('ph');
+
+    card.innerHTML = `
+      ${isPH ? '<div class="photo-badge">Sample</div>' : ''}
+      ${canManage && !isPH ? `<button class="photo-delete-btn" onclick="deletePhoto(event,'${photo.id}','${encodeURIComponent(photo.imageUrl)}')" title="Delete photo">🗑</button>` : ''}
+      <img src="${photo.imageUrl}" alt="${photo.caption || 'Gallery photo'}" loading="lazy" onload="this.classList.add('loaded')" onerror="this.src='https://placehold.co/400x300/e5e7eb/9ca3af?text=Image+Not+Found';this.classList.add('loaded')"/>
+      <div class="photo-caption-overlay">
+        <div class="photo-caption-text">${photo.caption || 'Untitled'}</div>
+        <div class="photo-caption-meta">📷 ${photo.uploadedBy || 'Unknown'} · ${dateStr}</div>
+      </div>
+    `;
+
+    // Click → lightbox (but not on delete btn)
+    card.addEventListener('click', (e) => {
+      if (e.target.closest('.photo-delete-btn')) return;
+      openLightbox(idx);
+    });
+
+    grid.appendChild(card);
+  });
+}
+
+// ══════════════════════════════════════════════════
+//  LIGHTBOX
+// ══════════════════════════════════════════════════
+function openLightbox(idx) {
+  lightboxIndex = idx;
+  showLightboxItem();
+  document.getElementById('lightbox').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function lightboxNav(dir) {
+  lightboxIndex = (lightboxIndex + dir + filteredPhotos.length) % filteredPhotos.length;
+  showLightboxItem();
+}
+function showLightboxItem() {
+  const photo = filteredPhotos[lightboxIndex];
+  if (!photo) return;
+  const img = document.getElementById('lightboxImg');
+  img.style.opacity = '0';
+  img.src = photo.imageUrl;
+  img.onload = () => { img.style.opacity = '1'; img.style.transition = 'opacity 0.3s'; };
+  img.onerror = () => { img.src = 'https://placehold.co/800x600/e5e7eb/9ca3af?text=Image+Not+Found'; img.style.opacity = '1'; };
+  document.getElementById('lightboxCaption').textContent = photo.caption || 'Untitled';
+  let dateStr = '';
+  try {
+    const d = photo.createdAt && photo.createdAt.toDate
+      ? photo.createdAt.toDate()
+      : (photo.createdAt ? new Date(photo.createdAt) : new Date());
+    dateStr = d.toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
+  } catch(e) {}
+  document.getElementById('lightboxMeta').textContent = `📷 ${photo.uploadedBy || 'Unknown'} · ${dateStr} · ${lightboxIndex+1} / ${filteredPhotos.length}`;
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', (e) => {
+  const lb = document.getElementById('lightbox');
+  if (!lb.classList.contains('open')) return;
+  if (e.key === 'ArrowRight') lightboxNav(1);
+  if (e.key === 'ArrowLeft')  lightboxNav(-1);
+  if (e.key === 'Escape')     closeLightbox();
+});
+document.getElementById('lightbox').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('lightbox')) closeLightbox();
+});
+
+// ══════════════════════════════════════════════════
+//  UPLOAD MODAL
+// ══════════════════════════════════════════════════
+function openUploadModal() {
+  document.getElementById('uploadModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeUploadModal() {
+  document.getElementById('uploadModal').classList.remove('open');
+  document.body.style.overflow = '';
+  resetUploadForm();
+}
+function resetUploadForm() {
+  document.getElementById('photoFile').value = '';
+  document.getElementById('photoCaption').value = '';
+  document.getElementById('filePreviewName').textContent = '';
+  document.getElementById('imgPreviewWrap').style.display = 'none';
+  document.getElementById('imgPreview').src = '';
+  document.getElementById('progressWrap').style.display = 'none';
+  document.getElementById('progressLabel').style.display = 'none';
+  document.getElementById('progressFill').style.width = '0%';
+  document.getElementById('submitBtnText').textContent = '📤 Upload Photo';
+  document.getElementById('submitUploadBtn').disabled = false;
+  selectedFile = null;
+}
+
+// Close modal on overlay click
+document.getElementById('uploadModal').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('uploadModal')) closeUploadModal();
+});
+
+// File select handler
+function handleFileSelect(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 10 * 1024 * 1024) {
+    showToast('File too large. Max 10MB allowed.', 'error');
+    input.value = '';
+    return;
+  }
+  if (!file.type.startsWith('image/')) {
+    showToast('Please select a valid image file.', 'error');
+    input.value = '';
+    return;
+  }
+  selectedFile = file;
+  document.getElementById('filePreviewName').textContent = `✔ ${file.name}`;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    document.getElementById('imgPreview').src = e.target.result;
+    document.getElementById('imgPreviewWrap').style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+
+// Drag & drop
+const dropzone = document.getElementById('dropzone');
+dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('dragover'); });
+dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+dropzone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  dropzone.classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file) {
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    const input = document.getElementById('photoFile');
+    input.files = dt.files;
+    handleFileSelect(input);
+  }
+});
+
+// Submit upload
+async function submitUpload() {
+  if (!selectedFile) {
+    showToast('Please select an image file.', 'warning');
+    return;
+  }
+  const caption  = document.getElementById('photoCaption').value.trim();
+  const category = document.getElementById('photoCategory').value;
+  if (!caption) {
+    showToast('Please enter a caption for the photo.', 'warning');
+    document.getElementById('photoCaption').focus();
+    return;
+  }
+
+  const btn      = document.getElementById('submitUploadBtn');
+  const btnText  = document.getElementById('submitBtnText');
+  const progWrap = document.getElementById('progressWrap');
+  const progFill = document.getElementById('progressFill');
+  const progLbl  = document.getElementById('progressLabel');
+
+  btn.disabled = true;
+  btnText.textContent = '⏳ Uploading…';
+  progWrap.style.display = 'block';
+  progLbl.style.display  = 'block';
+
+  try {
+    const timestamp = Date.now();
+    const filename  = `${timestamp}_${selectedFile.name.replace(/[^a-zA-Z0-9._-]/g,'_')}`;
+    const storageRef = storage.ref(`gallery/${filename}`);
+    const uploadTask = storageRef.put(selectedFile);
+
+    uploadTask.on('state_changed',
+      (snapshot) => {
+        const pct = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+        progFill.style.width = `${pct}%`;
+        progLbl.textContent  = `Uploading… ${pct}%`;
+      },
+      (error) => {
+        console.error('Upload error:', error);
+        showToast('Upload failed: ' + error.message, 'error');
+        btn.disabled = false;
+        btnText.textContent = '📤 Upload Photo';
+        progWrap.style.display = 'none';
+        progLbl.style.display  = 'none';
+      },
+      async () => {
+        try {
+          const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+          await db.collection('gallery').add({
+            imageUrl:      downloadURL,
+            caption:       caption,
+            category:      category,
+            uploadedBy:    currentUserName,
+            uploadedByUid: currentUser.uid,
+            createdAt:     firebase.firestore.FieldValue.serverTimestamp(),
+          });
+          showToast('Photo uploaded successfully! 🎉', 'success');
+          closeUploadModal();
+        } catch(err) {
+          console.error('Firestore save error:', err);
+          showToast('Photo uploaded but metadata save failed.', 'error');
+          btn.disabled = false;
+          btnText.textContent = '📤 Upload Photo';
+        }
+      }
+    );
+  } catch(err) {
+    console.error('Storage error:', err);
+    showToast('Upload failed: ' + err.message, 'error');
+    btn.disabled = false;
+    btnText.textContent = '📤 Upload Photo';
+    progWrap.style.display = 'none';
+    progLbl.style.display  = 'none';
+  }
+}
+
+// ══════════════════════════════════════════════════
+//  LOGOUT
+// ══════════════════════════════════════════════════
+async function handleLogout() {
+  try {
+    await auth.signOut();
+    showToast('Signed out successfully. Goodbye! 👋', 'success');
+    setTimeout(() => window.location.href = 'index.html', 1200);
+  } catch (err) {
+    showToast('Sign out failed: ' + err.message, 'error');
+  }
+}
+
+// ══════════════════════════════════════════════════
+//  DELETE PHOTO (admin/lecturer only)
+// ══════════════════════════════════════════════════
+async function deletePhoto(e, docId, encodedUrl) {
+  e.stopPropagation();
+  if (!confirm('Delete this photo? This cannot be undone.')) return;
+  try {
+    await db.collection('gallery').doc(docId).delete();
+    // Try to delete from Storage too
+    try {
+      const url = decodeURIComponent(encodedUrl);
+      const ref = storage.refFromURL(url);
+      await ref.delete();
+    } catch(storErr) {
+      // Storage delete might fail if URL is external — ignore
+    }
+    showToast('Photo deleted.', 'success');
+  } catch(err) {
+    console.error('Delete error:', err);
+    showToast('Failed to delete photo: ' + err.message, 'error');
+  }
+}
+</script>
+  <script src="js/site-nav.js"></script>
+</body>
+</html>
+
+

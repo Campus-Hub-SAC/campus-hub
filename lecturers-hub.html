@@ -1,0 +1,1613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Lecturers Hub – Sri Aurobindo College BCA</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { darkMode: 'class' };</script>
+
+  <!-- Firebase Compat SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
+
+  <style>
+    /* ═══════════ RESET & FONTS ═══════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --pink:   #ec4899;
+      --indigo: #6366f1;
+      --violet: #8b5cf6;
+      --grad:   linear-gradient(135deg, #ec4899 0%, #8b5cf6 50%, #6366f1 100%);
+      --grad-h: linear-gradient(135deg, #db2777 0%, #7c3aed 50%, #4f46e5 100%);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      background-color: #f9fafb;
+      color: #111827;
+      transition: background-color 0.4s ease, color 0.4s ease;
+      margin: 0; padding: 0; overflow-x: hidden;
+    }
+    html.dark body { background-color: #000000; color: #f9fafb; }
+
+    /* Dark mode toggle */
+    #darkToggle {
+      position: fixed; top: 1rem; right: 1rem; z-index: 999;
+      width: 42px; height: 42px; border-radius: 50%; border: none;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; background: #ffffff;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.06);
+      transition: background 0.3s, box-shadow 0.3s, transform 0.2s; outline: none;
+    }
+    #darkToggle:hover { transform: scale(1.08); box-shadow: 0 4px 18px rgba(0,0,0,0.16); }
+    html.dark #darkToggle { background: #1f2937; box-shadow: 0 2px 12px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06); }
+
+    /* Layout wrapper */
+    .page-wrap {
+      position: relative; z-index: 1; width: 100%; max-width: 1200px;
+      margin: 0 auto; padding: 1.5rem 1rem;
+      display: flex; flex-direction: column;
+    }
+
+    /* ═══ NAVBAR ═══ */
+    .navbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 900;
+      height: 64px; background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(0,0,0,0.07);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 1.5rem;
+      box-shadow: 0 1px 20px rgba(0,0,0,0.06);
+      transition: background 0.4s ease, border-color 0.4s ease;
+    }
+    html.dark .navbar {
+      background: rgba(17,24,39,0.92);
+      border-bottom-color: rgba(255,255,255,0.07);
+      box-shadow: 0 1px 20px rgba(0,0,0,0.4);
+    }
+    .navbar-brand {
+      display: flex; align-items: center; gap: 10px;
+      text-decoration: none; flex-shrink: 0;
+    }
+    .nav-logo {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: var(--grad); display: flex; align-items: center;
+      justify-content: center; font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 800; font-size: 0.85rem; color: #fff;
+      box-shadow: 0 4px 12px rgba(139,92,246,0.35);
+      flex-shrink: 0;
+    }
+    .nav-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 800; font-size: 0.95rem; color: #111827;
+      line-height: 1.1; white-space: nowrap;
+    }
+    html.dark .nav-title { color: #f9fafb; }
+    .nav-subtitle {
+      font-size: 0.65rem; font-weight: 600; letter-spacing: 0.08em;
+      text-transform: uppercase; background: var(--grad);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .nav-links {
+      display: flex; align-items: center; gap: 2px;
+      list-style: none; margin: 0 0 0 1rem; padding: 0;
+      overflow-x: auto; flex-wrap: nowrap;
+    }
+    .nav-links a {
+      display: block; padding: 6px 9px; border-radius: 8px;
+      font-size: 0.78rem; font-weight: 600; color: #6b7280;
+      text-decoration: none; transition: all 0.2s; white-space: nowrap;
+    }
+    .nav-links a:hover { color: #111827; background: rgba(0,0,0,0.05); }
+    html.dark .nav-links a:hover { color: #f9fafb; background: rgba(255,255,255,0.08); }
+    .nav-links a.active {
+      background: var(--grad); color: #fff !important;
+      box-shadow: 0 2px 10px rgba(139,92,246,0.35);
+    }
+    html.dark .nav-links a { color: #9ca3af; }
+    .nav-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .user-chip {
+      display: flex; align-items: center; gap: 8px;
+      padding: 5px 10px 5px 5px; border-radius: 20px;
+      background: rgba(0,0,0,0.04); font-size: 0.8rem; font-weight: 600;
+      color: #374151; cursor: default;
+    }
+    html.dark .user-chip { background: rgba(255,255,255,0.07); color: #e5e7eb; }
+    .user-avatar {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--grad); display: flex; align-items: center;
+      justify-content: center; font-size: 0.7rem; font-weight: 800; color: #fff;
+    }
+    .btn-logout {
+      padding: 6px 14px; border-radius: 10px; border: 1.5px solid #e5e7eb;
+      background: #fff; color: #374151; font-size: 0.78rem; font-weight: 600;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .btn-logout:hover { background: #fef2f2; border-color: #fca5a5; color: #dc2626; }
+    html.dark .btn-logout { background: #1f2937; border-color: #374151; color: #e5e7eb; }
+    html.dark .btn-logout:hover { background: #371a1a; border-color: #ef4444; color: #f87171; }
+    .hamburger {
+      display: none; flex-direction: column; gap: 4px; cursor: pointer;
+      padding: 6px; border-radius: 8px; transition: background 0.2s;
+    }
+    .hamburger:hover { background: rgba(0,0,0,0.06); }
+    html.dark .hamburger:hover { background: rgba(255,255,255,0.08); }
+    .hamburger span {
+      display: block; width: 20px; height: 2px; border-radius: 2px;
+      background: #374151; transition: all 0.3s;
+    }
+    html.dark .hamburger span { background: #e5e7eb; }
+
+    /* Mobile menu */
+    .mobile-menu {
+      display: none; position: fixed; top: 64px; left: 0; right: 0;
+      background: #fff; border-bottom: 1px solid rgba(0,0,0,0.08);
+      z-index: 800; padding: 1rem;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+      max-height: calc(100vh - 64px); overflow-y: auto;
+    }
+    html.dark .mobile-menu { background: #111827; border-bottom-color: rgba(255,255,255,0.07); }
+    .mobile-menu.open { display: block; }
+    .mobile-menu a {
+      display: block; padding: 10px 14px; border-radius: 10px;
+      font-size: 0.88rem; font-weight: 600; color: #374151;
+      text-decoration: none; transition: all 0.2s; margin-bottom: 2px;
+    }
+    html.dark .mobile-menu a { color: #e5e7eb; }
+    .mobile-menu a:hover { background: rgba(139,92,246,0.1); color: #8b5cf6; }
+    .mobile-menu a.active { background: var(--grad); color: #fff; }
+    .mobile-user-info {
+      padding: 12px 14px; border-radius: 12px; background: rgba(0,0,0,0.04);
+      margin-bottom: 10px;
+    }
+    html.dark .mobile-user-info { background: rgba(255,255,255,0.07); }
+
+    /* Main content padding for fixed navbar */
+    main { padding-top: 80px; }
+
+    /* ═══ PAGE HEADER ═══ */
+    .page-header { margin-bottom: 1.5rem; }
+    .page-header h1 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      font-weight: 800; color: #111827; line-height: 1.2;
+      margin-bottom: 0.4rem;
+    }
+    html.dark .page-header h1 { color: #f9fafb; }
+    .page-header p {
+      font-size: 1rem; font-weight: 500;
+      background: var(--grad); -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent; background-clip: text;
+    }
+
+    /* ═══ WELCOME BANNER ═══ */
+    .welcome-banner {
+      border-radius: 20px; padding: 1.4rem 1.6rem;
+      background: var(--grad);
+      box-shadow: 0 8px 32px rgba(139,92,246,0.3);
+      color: #fff; margin-bottom: 1.5rem;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 1rem;
+      position: relative; overflow: hidden;
+    }
+    .welcome-banner::before {
+      content: ''; position: absolute; top: -40px; right: -40px;
+      width: 160px; height: 160px; border-radius: 50%;
+      background: rgba(255,255,255,0.1);
+    }
+    .welcome-banner::after {
+      content: ''; position: absolute; bottom: -30px; right: 60px;
+      width: 100px; height: 100px; border-radius: 50%;
+      background: rgba(255,255,255,0.07);
+    }
+    .welcome-banner h2 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.25rem; font-weight: 800; margin-bottom: 0.2rem;
+    }
+    .welcome-banner p { font-size: 0.88rem; opacity: 0.9; }
+    .welcome-banner .badge {
+      background: rgba(255,255,255,0.2); padding: 6px 14px;
+      border-radius: 20px; font-size: 0.8rem; font-weight: 700;
+      backdrop-filter: blur(8px); white-space: nowrap;
+    }
+
+    /* ═══ STAT CARDS ═══ */
+    .stats-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr);
+      gap: 1rem; margin-bottom: 1.5rem;
+    }
+    @media (min-width: 768px) { .stats-grid { grid-template-columns: repeat(4, 1fr); } }
+    .stat-card {
+      background: #fff; border-radius: 20px; padding: 1.2rem 1.1rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.04);
+      transition: background 0.4s, transform 0.2s, box-shadow 0.2s;
+      position: relative; overflow: hidden;
+    }
+    .stat-card:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.12); }
+    html.dark .stat-card { background: #111827; box-shadow: 0 1px 3px rgba(0,0,0,0.4), 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05); }
+    .stat-card-icon {
+      width: 40px; height: 40px; border-radius: 12px;
+      background: var(--grad); display: flex; align-items: center;
+      justify-content: center; font-size: 1.1rem; margin-bottom: 0.7rem;
+      box-shadow: 0 4px 12px rgba(139,92,246,0.3);
+    }
+    .stat-card-value {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.8rem; font-weight: 800; color: #111827;
+      line-height: 1; margin-bottom: 0.2rem;
+    }
+    html.dark .stat-card-value { color: #f9fafb; }
+    .stat-card-label {
+      font-size: 0.75rem; font-weight: 600; color: #6b7280;
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    html.dark .stat-card-label { color: #9ca3af; }
+    .stat-card::before {
+      content: ''; position: absolute; top: -20px; right: -20px;
+      width: 80px; height: 80px; border-radius: 50%;
+      background: var(--grad); opacity: 0.07;
+    }
+
+    /* ═══ CARDS ═══ */
+    .card {
+      background: #ffffff; border-radius: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.04);
+      transition: background 0.4s ease, box-shadow 0.4s ease; overflow: hidden;
+      margin-bottom: 1.5rem;
+    }
+    html.dark .card { background: #111827; box-shadow: 0 1px 3px rgba(0,0,0,0.4), 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05); }
+    .card-accent { height: 3px; background: var(--grad); width: 100%; }
+    .card-body { padding: 1.4rem; }
+    .card-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.05rem; font-weight: 800; color: #111827;
+      display: flex; align-items: center; gap: 8px; margin-bottom: 1rem;
+    }
+    html.dark .card-title { color: #f9fafb; }
+
+    /* ═══ BUTTONS ═══ */
+    .btn-primary {
+      height: 44px; border: none; border-radius: 12px;
+      background: var(--grad); color: #fff; font-family: 'Inter', sans-serif;
+      font-size: 0.88rem; font-weight: 700; letter-spacing: 0.02em;
+      cursor: pointer; position: relative; overflow: hidden;
+      box-shadow: 0 4px 16px rgba(139,92,246,0.35);
+      transition: box-shadow 0.25s, transform 0.15s; outline: none;
+      display: inline-flex; align-items: center; justify-content: center;
+      gap: 6px; padding: 0 18px;
+    }
+    .btn-primary::before { content: ''; position: absolute; inset: 0; background: var(--grad-h); opacity: 0; transition: opacity 0.25s; }
+    .btn-primary:hover::before { opacity: 1; }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(139,92,246,0.4); }
+    .btn-primary:active { transform: translateY(0); box-shadow: 0 2px 8px rgba(139,92,246,0.3); }
+    .btn-primary:disabled { opacity: 0.65; cursor: not-allowed; transform: none; }
+    .btn-primary span { position: relative; z-index: 1; }
+
+    .btn-secondary {
+      height: 40px; border: 1.5px solid #e5e7eb; border-radius: 10px;
+      background: #fff; color: #374151; font-family: 'Inter', sans-serif;
+      font-size: 0.82rem; font-weight: 600; cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: center;
+      gap: 6px; padding: 0 14px;
+      transition: background 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.15s; outline: none;
+    }
+    .btn-secondary:hover { background: #f9fafb; border-color: #d1d5db; box-shadow: 0 2px 10px rgba(0,0,0,0.08); transform: translateY(-1px); }
+    html.dark .btn-secondary { background: #1f2937; border-color: #374151; color: #e5e7eb; }
+    html.dark .btn-secondary:hover { background: #111827; border-color: #4b5563; }
+
+    .btn-danger {
+      height: 40px; border: 1.5px solid #fca5a5; border-radius: 10px;
+      background: #fff5f5; color: #dc2626; font-family: 'Inter', sans-serif;
+      font-size: 0.82rem; font-weight: 600; cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: center;
+      gap: 6px; padding: 0 14px;
+      transition: all 0.2s; outline: none;
+    }
+    .btn-danger:hover { background: #fef2f2; border-color: #ef4444; box-shadow: 0 2px 10px rgba(239,68,68,0.15); }
+    html.dark .btn-danger { background: #1f1010; border-color: #7f1d1d; color: #f87171; }
+    html.dark .btn-danger:hover { background: #2d1515; border-color: #ef4444; }
+
+    .btn-success {
+      height: 40px; border: 1.5px solid #86efac; border-radius: 10px;
+      background: #f0fdf4; color: #16a34a; font-family: 'Inter', sans-serif;
+      font-size: 0.82rem; font-weight: 600; cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: center;
+      gap: 6px; padding: 0 14px;
+      transition: all 0.2s; outline: none;
+    }
+    .btn-success:hover { background: #dcfce7; border-color: #4ade80; box-shadow: 0 2px 10px rgba(34,197,94,0.15); }
+    html.dark .btn-success { background: #0f2a1a; border-color: #166534; color: #4ade80; }
+
+    /* ═══ FORM INPUTS ═══ */
+    .field { margin-bottom: 1rem; }
+    .field-label {
+      display: block; font-size: 0.75rem; font-weight: 700; color: #374151;
+      margin-bottom: 5px; letter-spacing: 0.05em; text-transform: uppercase;
+    }
+    html.dark .field-label { color: #9ca3af; }
+    .input-wrap { position: relative; }
+    .input-icon {
+      position: absolute; left: 13px; top: 50%;
+      transform: translateY(-50%); font-size: 0.95rem; pointer-events: none; opacity: 0.55;
+    }
+    .form-input, .form-select, .form-textarea {
+      width: 100%; height: 46px; padding: 0 14px 0 40px;
+      border: 1.5px solid #e5e7eb; border-radius: 12px;
+      font-family: 'Inter', sans-serif; font-size: 0.9rem; font-weight: 500;
+      color: #111827; background: #f9fafb; outline: none;
+      transition: border-color 0.25s, background 0.25s, box-shadow 0.25s;
+    }
+    .form-textarea { height: auto; padding: 12px 14px 12px 40px; resize: vertical; min-height: 80px; }
+    .form-input::placeholder, .form-textarea::placeholder { color: #9ca3af; font-weight: 400; }
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      border-color: #8b5cf6; background: #fff; box-shadow: 0 0 0 3px rgba(139,92,246,0.12);
+    }
+    html.dark .form-input, html.dark .form-select, html.dark .form-textarea {
+      background: #1f2937; border-color: #374151; color: #f9fafb;
+    }
+    html.dark .form-input::placeholder, html.dark .form-textarea::placeholder { color: #4b5563; }
+    html.dark .form-input:focus, html.dark .form-select:focus, html.dark .form-textarea:focus {
+      border-color: #8b5cf6; background: #111827; box-shadow: 0 0 0 3px rgba(139,92,246,0.18);
+    }
+    .form-input.no-icon, .form-textarea.no-icon { padding-left: 14px; }
+
+    /* ═══ COLLAPSIBLE FORM PANEL ═══ */
+    .form-panel {
+      max-height: 0; overflow: hidden;
+      transition: max-height 0.45s cubic-bezier(0.4,0,0.2,1), opacity 0.3s ease;
+      opacity: 0;
+    }
+    .form-panel.open { max-height: 600px; opacity: 1; }
+    .form-panel-inner { padding: 1.2rem 0 0.5rem; }
+
+    /* ═══ QUICK ACTIONS ═══ */
+    .quick-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.5rem; }
+    .action-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 18px; border-radius: 14px; border: 1.5px solid #e5e7eb;
+      background: #fff; color: #374151; font-family: 'Inter', sans-serif;
+      font-size: 0.85rem; font-weight: 700; cursor: pointer;
+      text-decoration: none; transition: all 0.22s;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    .action-btn:hover { border-color: #8b5cf6; color: #7c3aed; background: rgba(139,92,246,0.06); transform: translateY(-2px); box-shadow: 0 4px 16px rgba(139,92,246,0.15); }
+    html.dark .action-btn { background: #1f2937; border-color: #374151; color: #e5e7eb; }
+    html.dark .action-btn:hover { border-color: #8b5cf6; color: #a78bfa; background: rgba(139,92,246,0.12); }
+    .action-btn.active-action { background: var(--grad); color: #fff; border-color: transparent; box-shadow: 0 4px 16px rgba(139,92,246,0.35); }
+    .action-btn.active-action:hover { transform: translateY(-2px); }
+
+    /* ═══ GROUP CARD ═══ */
+    .group-card {
+      background: #fff; border: 1px solid rgba(0,0,0,0.06); border-radius: 16px;
+      padding: 1rem 1.2rem; margin-bottom: 0.75rem;
+      transition: all 0.2s; position: relative; overflow: hidden;
+    }
+    html.dark .group-card { background: #1a2435; border-color: rgba(255,255,255,0.07); }
+    .group-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.1); transform: translateY(-1px); }
+    html.dark .group-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.4); }
+    .group-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--grad); }
+    .group-name { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.95rem; font-weight: 800; color: #111827; }
+    html.dark .group-name { color: #f9fafb; }
+    .group-meta { font-size: 0.78rem; color: #6b7280; margin-top: 2px; }
+    html.dark .group-meta { color: #9ca3af; }
+
+    /* Members sub-panel */
+    .members-panel {
+      max-height: 0; overflow: hidden;
+      transition: max-height 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.3s;
+      opacity: 0;
+    }
+    .members-panel.open { max-height: 400px; opacity: 1; overflow-y: auto; }
+    .members-inner { margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid rgba(0,0,0,0.07); }
+    html.dark .members-inner { border-top-color: rgba(255,255,255,0.08); }
+    .member-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 10px; border-radius: 20px;
+      background: rgba(139,92,246,0.1); color: #7c3aed;
+      font-size: 0.75rem; font-weight: 600; margin: 3px;
+    }
+    html.dark .member-chip { background: rgba(139,92,246,0.2); color: #a78bfa; }
+
+    /* ═══ RESOURCE APPROVAL ROW ═══ */
+    .resource-row {
+      display: flex; align-items: flex-start; gap: 0.75rem;
+      padding: 0.9rem 0; border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+    html.dark .resource-row { border-bottom-color: rgba(255,255,255,0.06); }
+    .resource-row:last-child { border-bottom: none; }
+    .resource-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      background: rgba(139,92,246,0.1); display: flex; align-items: center;
+      justify-content: center; font-size: 1.1rem; flex-shrink: 0;
+    }
+    html.dark .resource-icon { background: rgba(139,92,246,0.2); }
+    .resource-title { font-weight: 700; font-size: 0.9rem; color: #111827; }
+    html.dark .resource-title { color: #f9fafb; }
+    .resource-meta { font-size: 0.75rem; color: #6b7280; margin-top: 2px; }
+    html.dark .resource-meta { color: #9ca3af; }
+
+    /* ═══ STUDENT PROFILE CARD ═══ */
+    .student-mini-card {
+      background: rgba(139,92,246,0.06); border-radius: 16px; padding: 1.1rem;
+      border: 1px solid rgba(139,92,246,0.15);
+    }
+    html.dark .student-mini-card { background: rgba(139,92,246,0.12); border-color: rgba(139,92,246,0.25); }
+
+    /* ═══ BADGE / PILL ═══ */
+    .badge {
+      display: inline-flex; align-items: center; padding: 3px 10px;
+      border-radius: 20px; font-size: 0.7rem; font-weight: 700;
+      letter-spacing: 0.04em; text-transform: uppercase;
+    }
+    .badge-purple { background: rgba(139,92,246,0.12); color: #7c3aed; }
+    .badge-green  { background: rgba(34,197,94,0.12);  color: #16a34a; }
+    .badge-red    { background: rgba(239,68,68,0.12);  color: #dc2626; }
+    .badge-yellow { background: rgba(234,179,8,0.12);  color: #a16207; }
+    html.dark .badge-purple { background: rgba(139,92,246,0.22); color: #a78bfa; }
+    html.dark .badge-green  { background: rgba(34,197,94,0.18);  color: #4ade80; }
+    html.dark .badge-red    { background: rgba(239,68,68,0.18);  color: #f87171; }
+    html.dark .badge-yellow { background: rgba(234,179,8,0.18);  color: #fbbf24; }
+
+    /* ═══ EMPTY STATE ═══ */
+    .empty-state {
+      text-align: center; padding: 2.5rem 1rem;
+      display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+    }
+    .empty-state-icon { font-size: 2.5rem; margin-bottom: 0.5rem; opacity: 0.6; }
+    .empty-state-title { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 1rem; color: #374151; }
+    html.dark .empty-state-title { color: #d1d5db; }
+    .empty-state-text { font-size: 0.82rem; color: #9ca3af; max-width: 280px; }
+
+    /* ═══ ACCESS RESTRICTED ═══ */
+    .access-restricted {
+      min-height: 60vh; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; text-align: center; gap: 1rem;
+    }
+
+    /* ═══ ADMIN SEARCH ═══ */
+    .admin-search-bar {
+      display: flex; gap: 0.75rem; flex-wrap: wrap;
+      padding: 1rem 1.2rem; background: rgba(139,92,246,0.07);
+      border-radius: 14px; margin-bottom: 1.5rem;
+      border: 1px dashed rgba(139,92,246,0.3);
+      align-items: flex-end;
+    }
+    html.dark .admin-search-bar { background: rgba(139,92,246,0.12); }
+
+    /* ═══ DIVIDER ═══ */
+    .section-divider {
+      display: flex; align-items: center; gap: 1rem;
+      margin: 0.5rem 0 1.2rem;
+    }
+    .section-divider span { font-size: 0.72rem; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.1em; white-space: nowrap; }
+    .section-divider::before, .section-divider::after { content: ''; flex: 1; height: 1px; background: rgba(0,0,0,0.09); }
+    html.dark .section-divider::before, html.dark .section-divider::after { background: rgba(255,255,255,0.09); }
+
+    /* ═══ LOADING SPINNER ═══ */
+    .spinner { width: 40px; height: 40px; border: 3px solid rgba(139,92,246,0.2); border-top-color: #8b5cf6; border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ═══ TOAST ═══ */
+    #toast {
+      position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%) translateY(20px);
+      background: #1f2937; color: #fff; padding: 12px 24px; border-radius: 14px;
+      font-size: 0.88rem; font-weight: 600; z-index: 9999;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.05);
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.35s, transform 0.35s; white-space: nowrap;
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+    #toast.toast-success { background: linear-gradient(135deg,#059669,#10b981); }
+    #toast.toast-error   { background: linear-gradient(135deg,#dc2626,#ef4444); }
+
+    /* ═══ FOOTER ═══ */
+    .footer {
+      text-align: center; padding: 2rem 1rem;
+      border-top: 1px solid rgba(0,0,0,0.06); margin-top: 2rem;
+    }
+    html.dark .footer { border-top-color: rgba(255,255,255,0.07); }
+    .footer p { font-size: 0.78rem; color: #9ca3af; }
+
+    /* ═══ UTILITY ═══ */
+    .flex-center { display: flex; align-items: center; justify-content: center; }
+    .text-gradient {
+      background: var(--grad); -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .hidden { display: none !important; }
+    .gap-sm { gap: 0.5rem; }
+    .mt-sm { margin-top: 0.5rem; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 600px) { .two-col { grid-template-columns: 1fr; } }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(139,92,246,0.35); border-radius: 3px; }
+
+    /* Nav hide on mobile */
+    @media (max-width: 900px) {
+      .nav-links { display: none; }
+      .hamburger { display: flex; }
+      .user-chip { display: none; }
+      .btn-logout { display: none; }
+    }
+
+    /* Attendance placeholder */
+    .attendance-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.5rem; }
+    .att-student {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 12px; border-radius: 10px; background: rgba(0,0,0,0.03);
+      border: 1px solid rgba(0,0,0,0.06);
+    }
+    html.dark .att-student { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.07); }
+    .att-name { font-size: 0.8rem; font-weight: 600; color: #374151; }
+    html.dark .att-name { color: #d1d5db; }
+    .att-toggle {
+      width: 32px; height: 18px; border-radius: 9px; border: none;
+      background: #e5e7eb; cursor: pointer; position: relative;
+      transition: background 0.25s;
+    }
+    .att-toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 7px; background: #fff; transition: transform 0.25s; }
+    .att-toggle.present { background: #10b981; }
+    .att-toggle.present::after { transform: translateX(14px); }
+  </style>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<!-- ═══ DARK TOGGLE ═══ -->
+<button id="darkToggle" title="Toggle dark mode">🌙</button>
+
+<!-- ═══ TOAST ═══ -->
+<div id="toast"></div>
+
+<!-- ═══ NAVBAR ═══ -->
+<nav class="navbar" id="navbar">
+  <a class="navbar-brand" href="index.html">
+    <div class="nav-logo">SAC</div>
+    <div>
+      <div class="nav-title">Sri Aurobindo College</div>
+      <div class="nav-subtitle">BCA Department</div>
+    </div>
+  </a>
+
+  <ul class="nav-links" id="navLinks">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="resources.html">Resources</a></li>
+    <li><a href="upload.html">Upload</a></li>
+    <li><a href="profile.html">Profile</a></li>
+    <li><a href="events.html">Events</a></li>
+    <li><a href="Home.html">Campus Hub</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="gallery.html">Gallery</a></li>
+    <li><a href="notifications.html">Notifications</a></li>
+    <li><a href="assignments.html">Assignments</a></li>
+    <li><a href="students-hub.html">Students Hub</a></li>
+    <li><a href="lecturers-hub.html" class="active">Lecturers Hub</a></li>
+    <li id="adminNavItem" class="hidden"><a href="admin.html">Admin</a></li>
+  </ul>
+
+  <div class="nav-right">
+    <div class="user-chip" id="userChip">
+      <div class="user-avatar" id="userAvatar">?</div>
+      <span id="userNameNav">Loading…</span>
+    </div>
+    <button class="btn-logout" id="logoutBtn" style="display:none;" onclick="handleLogout()">Logout</button>
+    <div class="hamburger" id="hamburger" title="Menu">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══ MOBILE MENU ═══ -->
+<div class="mobile-menu" id="mobileMenu">
+  <div class="mobile-user-info" id="mobileUserInfo">
+    <div style="font-weight:800;font-size:0.9rem;" id="mobileUserName">Loading…</div>
+    <div style="font-size:0.75rem;color:#9ca3af;" id="mobileUserRole">—</div>
+  </div>
+  <a href="index.html">🏠 Home</a>
+  <a href="resources.html">📚 Resources</a>
+  <a href="upload.html">⬆️ Upload</a>
+  <a href="profile.html">👤 Profile</a>
+  <a href="events.html">📅 Events</a>
+  <a href="Home.html">🏫 Campus Hub</a>
+  <a href="about.html">ℹ️ About</a>
+  <a href="gallery.html">🖼️ Gallery</a>
+  <a href="notifications.html">🔔 Notifications</a>
+  <a href="assignments.html">📝 Assignments</a>
+  <a href="students-hub.html">🎓 Students Hub</a>
+  <a href="lecturers-hub.html" class="active">👨‍🏫 Lecturers Hub</a>
+  <a href="admin.html" id="adminMobileLink" class="hidden">🛡️ Admin</a>
+  <div style="margin-top:0.75rem;">
+    <button class="btn-danger" style="width:100%;" id="mobileLogoutBtn">Sign Out</button>
+  </div>
+</div>
+
+<!-- ═══ MAIN ═══ -->
+<main>
+
+  <!-- Loading overlay -->
+  <div id="loadingState" style="min-height:60vh;display:flex;align-items:center;justify-content:center;">
+    <div style="text-align:center;">
+      <div class="spinner" style="margin:0 auto 1rem;"></div>
+      <p style="color:#9ca3af;font-size:0.9rem;font-weight:600;">Loading Lecturers Hub…</p>
+    </div>
+  </div>
+
+  <!-- Access Restricted -->
+  <div id="accessRestricted" class="hidden page-wrap">
+    <div class="access-restricted">
+      <div style="font-size:4rem;">🚫</div>
+      <h2 style="font-family:'Plus Jakarta Sans',sans-serif;font-size:1.5rem;font-weight:800;color:#111827;" class="text-gradient">Access Restricted</h2>
+      <p style="color:#6b7280;font-size:0.9rem;max-width:320px;">This page is only accessible to Lecturers and Admins. Please contact an administrator if you believe this is a mistake.</p>
+      <a href="index.html" class="btn-primary" style="margin-top:0.5rem;text-decoration:none;"><span>← Back to Home</span></a>
+    </div>
+  </div>
+
+  <!-- Main Dashboard -->
+  <div id="dashboard" class="hidden page-wrap">
+
+    <!-- Page Header -->
+    <div class="page-header">
+      <h1>👨‍🏫 Lecturers Hub</h1>
+      <p>Manage your classes, students, and content efficiently</p>
+    </div>
+
+    <!-- Admin: Impersonate Lecturer Search -->
+    <div id="adminSearchSection" class="hidden">
+      <div class="admin-search-bar">
+        <div style="flex:1;min-width:200px;">
+          <div class="field-label" style="margin-bottom:4px;">🛡️ Admin: View Lecturer Dashboard</div>
+          <div class="input-wrap">
+            <span class="input-icon">🔍</span>
+            <input type="text" class="form-input" id="adminLecturerSearch" placeholder="Search by name or email…" />
+          </div>
+        </div>
+        <button class="btn-primary" onclick="adminSearchLecturer()" style="width:auto;flex-shrink:0;"><span>Search</span></button>
+        <button class="btn-secondary" onclick="resetAdminView()" style="flex-shrink:0;">Reset</button>
+      </div>
+      <div id="adminSearchResults" class="hidden" style="margin-bottom:1rem;display:flex;gap:0.5rem;flex-wrap:wrap;"></div>
+    </div>
+
+    <!-- Welcome Banner -->
+    <div class="welcome-banner" id="welcomeBanner">
+      <div>
+        <h2 id="welcomeName">Welcome!</h2>
+        <p id="welcomeSub">BCA Department · Lecturers Hub</p>
+      </div>
+      <div class="badge" id="welcomeRoleBadge">Lecturer</div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-card-icon">👥</div>
+        <div class="stat-card-value" id="statGroups">0</div>
+        <div class="stat-card-label">My Groups</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-icon">🎓</div>
+        <div class="stat-card-value" id="statStudents">0</div>
+        <div class="stat-card-label">Total Students</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-icon">⏳</div>
+        <div class="stat-card-value" id="statPending">0</div>
+        <div class="stat-card-label">Pending Approvals</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-icon">📝</div>
+        <div class="stat-card-value" id="statAssignments">0</div>
+        <div class="stat-card-label">Assignments Given</div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="card">
+      <div class="card-accent"></div>
+      <div class="card-body">
+        <div class="card-title">⚡ Quick Actions</div>
+        <div class="quick-actions">
+          <button class="action-btn" id="toggleCreateGroupBtn" onclick="toggleCreateGroup()">
+            ➕ Create Group
+          </button>
+          <a class="action-btn" href="upload.html">⬆️ Upload Resource</a>
+          <a class="action-btn" href="resources.html">📚 View Resources</a>
+          <button class="action-btn" onclick="showAttendanceModal()">📋 Mark Attendance</button>
+          <button class="action-btn" onclick="showToast('Test creation coming soon!','')">🧪 Create Test</button>
+        </div>
+
+        <!-- Create Group Form Panel -->
+        <div class="form-panel" id="createGroupPanel">
+          <div class="form-panel-inner">
+            <div class="section-divider"><span>Create New Group</span></div>
+            <div class="two-col">
+              <div class="field">
+                <label class="field-label">Group Name</label>
+                <div class="input-wrap">
+                  <span class="input-icon">👥</span>
+                  <input type="text" class="form-input" id="groupName" placeholder="e.g. BCA 3rd Year A" />
+                </div>
+              </div>
+              <div class="field">
+                <label class="field-label">Subject</label>
+                <div class="input-wrap">
+                  <span class="input-icon">📖</span>
+                  <input type="text" class="form-input" id="groupSubject" placeholder="e.g. Data Structures" />
+                </div>
+              </div>
+            </div>
+            <div class="field">
+              <label class="field-label">Description</label>
+              <div class="input-wrap">
+                <span class="input-icon">📄</span>
+                <textarea class="form-textarea" id="groupDescription" placeholder="Optional description for this group…"></textarea>
+              </div>
+            </div>
+            <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
+              <button class="btn-primary" style="width:auto;" onclick="createGroup()"><span>✓ Create Group</span></button>
+              <button class="btn-secondary" onclick="toggleCreateGroup()">Cancel</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- My Groups -->
+    <div class="card">
+      <div class="card-accent"></div>
+      <div class="card-body">
+        <div class="card-title">👥 My Groups</div>
+        <div id="groupsContainer">
+          <div class="flex-center" style="padding:2rem;">
+            <div class="spinner"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Student Management -->
+    <div class="card">
+      <div class="card-accent"></div>
+      <div class="card-body">
+        <div class="card-title">🔍 Student Management</div>
+        <div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-bottom:1rem;">
+          <div class="input-wrap" style="flex:1;min-width:220px;">
+            <span class="input-icon">🎓</span>
+            <input type="text" class="form-input" id="studentSearchInput" placeholder="Search student by name or email…" />
+          </div>
+          <button class="btn-primary" style="width:auto;" onclick="searchStudent()"><span>Search</span></button>
+        </div>
+        <div id="studentSearchResult"></div>
+      </div>
+    </div>
+
+    <!-- Resource Approval -->
+    <div class="card" id="approvalCard">
+      <div class="card-accent"></div>
+      <div class="card-body">
+        <div class="card-title">✅ Resource Approval
+          <span class="badge badge-yellow" id="pendingBadge" style="margin-left:auto;">Loading…</span>
+        </div>
+        <div id="approvalContainer">
+          <div class="flex-center" style="padding:2rem;">
+            <div class="spinner"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /dashboard -->
+</main>
+
+<!-- ═══ ATTENDANCE MODAL ═══ -->
+<div id="attModal" style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.55);backdrop-filter:blur(4px);align-items:center;justify-content:center;">
+  <div class="card" style="width:min(95vw,560px);max-height:85vh;overflow-y:auto;border-radius:20px;margin:0;">
+    <div class="card-accent"></div>
+    <div class="card-body">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+        <div class="card-title" style="margin-bottom:0;">📋 Mark Attendance</div>
+        <button onclick="closeAttModal()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:#6b7280;">✕</button>
+      </div>
+
+      <div class="field">
+        <label class="field-label">Select Group</label>
+        <div class="input-wrap">
+          <span class="input-icon">👥</span>
+          <select class="form-select" id="attGroupSelect" onchange="loadAttendanceStudents()">
+            <option value="">— Select a group —</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field-label">Date</label>
+        <div class="input-wrap">
+          <span class="input-icon">📅</span>
+          <input type="date" class="form-input" id="attDate" />
+        </div>
+      </div>
+
+      <div id="attStudentsList" style="margin-bottom:1rem;"></div>
+
+      <div style="display:flex;gap:0.75rem;">
+        <button class="btn-primary" onclick="saveAttendance()"><span>💾 Save Attendance</span></button>
+        <button class="btn-secondary" onclick="closeAttModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ FOOTER ═══ -->
+<footer class="footer">
+  <p>© 2025 Sri Aurobindo College, BCA Department. Lecturers Hub.</p>
+  <p style="margin-top:4px;" class="text-gradient" style="font-size:0.72rem;font-weight:600;">Built with ❤️ for Educators</p>
+</footer>
+
+<script>
+/* ═══════════════════════════════════════════════
+   FIREBASE INIT
+═══════════════════════════════════════════════ */
+const firebaseConfig = {
+  apiKey: "AIzaSyCX5g8sPw_iG0HMujrZM8dG7w510c6jpC4",
+  authDomain: "campus-hub-2220b.firebaseapp.com",
+  projectId: "campus-hub-2220b",
+  storageBucket: "campus-hub-2220b.firebasestorage.app",
+  messagingSenderId: "371742140259",
+  appId: "1:371742140259:web:55a2b29fd269689abb5556"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db   = firebase.firestore();
+const storage = firebase.storage();
+
+/* ═══════════════════════════════════════════════
+   GLOBAL STATE
+═══════════════════════════════════════════════ */
+let currentUser   = null;
+let currentUserData= null;
+let viewingUID    = null;   // if admin is impersonating a lecturer
+let groupsUnsub   = null;
+let approvalUnsub = null;
+let assignUnsub   = null;
+let cachedGroups  = [];
+let userCache     = {};     // uid -> user doc cache
+
+/* ═══════════════════════════════════════════════
+   UTILS
+═══════════════════════════════════════════════ */
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show' + (type ? ' toast-'+type : '');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.className = '', 3200);
+}
+
+function animateCount(el, target) {
+  let cur = 0;
+  const step = Math.max(1, Math.ceil(target / 40));
+  const timer = setInterval(() => {
+    cur = Math.min(cur + step, target);
+    el.textContent = cur;
+    if (cur >= target) clearInterval(timer);
+  }, 25);
+}
+
+function getInitials(name) {
+  if (!name) return '?';
+  return name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+}
+
+function formatDate(ts) {
+  if (!ts) return '—';
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  return d.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+}
+
+/* ═══════════════════════════════════════════════
+   DARK MODE
+═══════════════════════════════════════════════ */
+const darkToggle = document.getElementById('darkToggle');
+const htmlEl = document.documentElement;
+if (localStorage.getItem('theme') === 'dark' || 
+    (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme:dark)').matches)) {
+  htmlEl.classList.add('dark');
+  darkToggle.textContent = '☀️';
+}
+darkToggle.addEventListener('click', () => {
+  htmlEl.classList.toggle('dark');
+  const isDark = htmlEl.classList.contains('dark');
+  localStorage.setItem('theme', isDark ? 'dark' : 'light');
+  darkToggle.textContent = isDark ? '☀️' : '🌙';
+});
+
+/* ═══════════════════════════════════════════════
+   HAMBURGER MENU
+═══════════════════════════════════════════════ */
+document.getElementById('hamburger').addEventListener('click', () => {
+  document.getElementById('mobileMenu').classList.toggle('open');
+});
+document.addEventListener('click', (e) => {
+  const mm = document.getElementById('mobileMenu');
+  if (mm.classList.contains('open') &&
+      !mm.contains(e.target) &&
+      !document.getElementById('hamburger').contains(e.target)) {
+    mm.classList.remove('open');
+  }
+});
+
+/* ═══════════════════════════════════════════════
+   AUTH
+═══════════════════════════════════════════════ */
+auth.onAuthStateChanged(async user => {
+  if (!user) { window.location.href = 'index.html'; return; }
+  currentUser = user;
+
+  try {
+    const snap = await db.collection('users').doc(user.uid).get();
+    if (!snap.exists) throw new Error('User doc not found');
+    currentUserData = snap.data();
+
+    const role = currentUserData.role || '';
+    const roleLower = role?.toLowerCase();
+    const isLecturer = roleLower === 'lecturer' || roleLower === 'admin';
+
+    // Update navbar user chip
+    document.getElementById('userNameNav').textContent = currentUserData.name || user.email;
+    document.getElementById('userAvatar').textContent  = getInitials(currentUserData.name || user.email);
+    document.getElementById('mobileUserName').textContent = currentUserData.name || user.email;
+    document.getElementById('mobileUserRole').textContent = role || 'User';
+
+    // Admin nav link
+    if (roleLower === 'admin') {
+      document.getElementById('adminNavItem').classList.remove('hidden');
+      document.getElementById('adminMobileLink').classList.remove('hidden');
+    }
+
+    // Logout buttons
+    document.getElementById('logoutBtn').style.display = 'inline-flex';
+    document.getElementById('logoutBtn').addEventListener('click', doLogout);
+    document.getElementById('mobileLogoutBtn').addEventListener('click', doLogout);
+
+    document.getElementById('loadingState').style.display = 'none';
+
+    if (!isLecturer) {
+      document.getElementById('accessRestricted').classList.remove('hidden');
+      return;
+    }
+
+    // Show dashboard
+    document.getElementById('dashboard').classList.remove('hidden');
+
+    // If Admin, show impersonation search
+    if (roleLower === 'admin') {
+      document.getElementById('adminSearchSection').classList.remove('hidden');
+    }
+
+    // Load own dashboard
+    loadDashboard(user.uid, currentUserData);
+
+  } catch (err) {
+    console.error(err);
+    showToast('Error loading user data. ' + err.message, 'error');
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('accessRestricted').classList.remove('hidden');
+  }
+});
+
+function handleLogout() {
+  auth.signOut().then(() => window.location.href = 'index.html');
+}
+
+const doLogout = handleLogout;
+
+/* ═══════════════════════════════════════════════
+   LOAD DASHBOARD
+═══════════════════════════════════════════════ */
+function loadDashboard(uid, userData) {
+  viewingUID = uid;
+  const name = userData.name || userData.email || 'Lecturer';
+  document.getElementById('welcomeName').textContent = 'Welcome, ' + name + '!';
+  document.getElementById('welcomeSub').textContent  = 'BCA Department · ' + (userData.role || 'Lecturer');
+  document.getElementById('welcomeRoleBadge').textContent = userData.role || 'Lecturer';
+
+  // Clear previous listeners
+  if (groupsUnsub)   { groupsUnsub();   groupsUnsub   = null; }
+  if (approvalUnsub) { approvalUnsub(); approvalUnsub = null; }
+  if (assignUnsub)   { assignUnsub();   assignUnsub   = null; }
+
+  // Real-time groups listener
+  groupsUnsub = db.collection('groups')
+    .where('createdBy', '==', uid)
+    .onSnapshot(snap => {
+      cachedGroups = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderGroups(cachedGroups);
+      updateGroupStats(cachedGroups);
+      populateAttGroupSelect(cachedGroups);
+    }, err => {
+      console.error('Groups error:', err);
+      showToast('Failed to load groups.', 'error');
+    });
+
+  // Real-time resource approval
+  approvalUnsub = db.collection('resources')
+    .where('approved', '==', false)
+    .onSnapshot(snap => {
+      const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderApprovalList(items);
+      const badge = document.getElementById('pendingBadge');
+      badge.textContent = items.length + ' Pending';
+      badge.className = 'badge ' + (items.length > 0 ? 'badge-yellow' : 'badge-green');
+      // Update stat
+      animateCount(document.getElementById('statPending'), items.length);
+    }, err => {
+      console.error('Approval error:', err);
+      document.getElementById('pendingBadge').textContent = '—';
+    });
+
+  // Real-time assignments count
+  assignUnsub = db.collection('assignments')
+    .where('createdBy', '==', uid)
+    .onSnapshot(snap => {
+      animateCount(document.getElementById('statAssignments'), snap.size);
+    }, err => console.error('Assignments error:', err));
+}
+
+/* ═══════════════════════════════════════════════
+   ADMIN: IMPERSONATE LECTURER
+═══════════════════════════════════════════════ */
+async function adminSearchLecturer() {
+  const query = document.getElementById('adminLecturerSearch').value.trim().toLowerCase();
+  if (!query) { showToast('Enter a name or email to search.', 'error'); return; }
+
+  try {
+    const snap = await db.collection('users').get();
+    const results = snap.docs
+      .map(d => ({ id: d.id, ...d.data() }))
+      .filter(u => (u.role?.toLowerCase() === 'lecturer' || u.role?.toLowerCase() === 'admin') &&
+        ((u.name || '').toLowerCase().includes(query) ||
+         (u.email || '').toLowerCase().includes(query)));
+
+    const container = document.getElementById('adminSearchResults');
+    container.innerHTML = '';
+
+    if (results.length === 0) {
+      container.innerHTML = '<p style="color:#9ca3af;font-size:0.82rem;">No lecturers found.</p>';
+      container.classList.remove('hidden');
+      return;
+    }
+
+    results.forEach(u => {
+      const btn = document.createElement('button');
+      btn.className = 'action-btn';
+      btn.innerHTML = `<div class="user-avatar" style="width:22px;height:22px;font-size:0.6rem;">${getInitials(u.name)}</div> ${u.name || u.email} <span class="badge badge-purple" style="margin-left:4px;">${u.role}</span>`;
+      btn.onclick = () => {
+        document.getElementById('adminSearchResults').querySelectorAll('.action-btn').forEach(b => b.classList.remove('active-action'));
+        btn.classList.add('active-action');
+        loadDashboard(u.id, u);
+        showToast('Viewing ' + (u.name || u.email) + "'s dashboard", 'success');
+      };
+      container.appendChild(btn);
+    });
+
+    container.classList.remove('hidden');
+    container.style.display = 'flex';
+  } catch (err) {
+    showToast('Search failed: ' + err.message, 'error');
+  }
+}
+
+function resetAdminView() {
+  document.getElementById('adminLecturerSearch').value = '';
+  document.getElementById('adminSearchResults').classList.add('hidden');
+  loadDashboard(currentUser.uid, currentUserData);
+  showToast('Showing your own dashboard.', '');
+}
+
+/* ═══════════════════════════════════════════════
+   GROUP STATS
+═══════════════════════════════════════════════ */
+function updateGroupStats(groups) {
+  animateCount(document.getElementById('statGroups'), groups.length);
+  const totalMembers = groups.reduce((sum, g) => sum + (g.members ? g.members.length : 0), 0);
+  animateCount(document.getElementById('statStudents'), totalMembers);
+}
+
+/* ═══════════════════════════════════════════════
+   RENDER GROUPS
+═══════════════════════════════════════════════ */
+function renderGroups(groups) {
+  const container = document.getElementById('groupsContainer');
+  if (groups.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">👥</div>
+        <div class="empty-state-title">No groups yet</div>
+        <div class="empty-state-text">Create your first group using the "Create Group" button above.</div>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = groups.map(g => `
+    <div class="group-card" id="gc-${g.id}">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:0.5rem;flex-wrap:wrap;">
+        <div>
+          <div class="group-name">${escHtml(g.name || 'Untitled Group')}</div>
+          <div class="group-meta">
+            📖 ${escHtml(g.subject || 'No subject')} &nbsp;·&nbsp;
+            👥 ${(g.members||[]).length} member${(g.members||[]).length !== 1 ? 's' : ''} &nbsp;·&nbsp;
+            📅 ${formatDate(g.createdAt)}
+          </div>
+          ${g.description ? `<div style="font-size:0.8rem;color:#6b7280;margin-top:4px;">${escHtml(g.description)}</div>` : ''}
+        </div>
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;flex-shrink:0;">
+          <button class="btn-secondary" onclick="toggleMembers('${g.id}', ${JSON.stringify(g.members||[]).replace(/"/g,'&quot;')})">
+            👁️ Members
+          </button>
+          <button class="btn-danger" onclick="deleteGroup('${g.id}', '${escHtml(g.name||'')}')">
+            🗑️ Delete
+          </button>
+        </div>
+      </div>
+      <div class="members-panel" id="mp-${g.id}">
+        <div class="members-inner" id="mi-${g.id}">
+          <div class="flex-center" style="padding:1rem;"><div class="spinner"></div></div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function escHtml(str) {
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+/* Toggle members sub-panel */
+async function toggleMembers(groupId, memberUids) {
+  const panel = document.getElementById('mp-' + groupId);
+  const inner = document.getElementById('mi-' + groupId);
+  const isOpen = panel.classList.contains('open');
+
+  if (isOpen) {
+    panel.classList.remove('open');
+    return;
+  }
+
+  panel.classList.add('open');
+
+  if (!memberUids || memberUids.length === 0) {
+    inner.innerHTML = '<p style="color:#9ca3af;font-size:0.82rem;padding:0.5rem 0;">No members in this group yet.</p>';
+    return;
+  }
+
+  inner.innerHTML = '<div class="flex-center" style="padding:1rem;"><div class="spinner"></div></div>';
+
+  try {
+    const members = await fetchUsersByUids(memberUids);
+    if (members.length === 0) {
+      inner.innerHTML = '<p style="color:#9ca3af;font-size:0.82rem;padding:0.5rem 0;">No member details found.</p>';
+      return;
+    }
+    inner.innerHTML = `
+      <div style="margin-bottom:0.5rem;font-size:0.75rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:0.05em;">
+        ${members.length} Member${members.length!==1?'s':''}
+      </div>
+      <div style="display:flex;flex-wrap:wrap;">
+        ${members.map(m => `
+          <div class="member-chip">
+            <div class="user-avatar" style="width:20px;height:20px;font-size:0.55rem;">${getInitials(m.name)}</div>
+            ${escHtml(m.name || m.email || m.uid)}
+          </div>
+        `).join('')}
+      </div>`;
+  } catch (err) {
+    inner.innerHTML = `<p style="color:#ef4444;font-size:0.82rem;">Error loading members: ${err.message}</p>`;
+  }
+}
+
+/* Fetch users by UIDs (with caching) */
+async function fetchUsersByUids(uids) {
+  const toFetch = uids.filter(u => !userCache[u]);
+  if (toFetch.length > 0) {
+    // Firestore 'in' supports up to 30 per query in v10, but compat uses 10 -> chunk
+    const chunks = [];
+    for (let i = 0; i < toFetch.length; i += 10) chunks.push(toFetch.slice(i, i+10));
+    await Promise.all(chunks.map(async chunk => {
+      const snap = await db.collection('users').where(firebase.firestore.FieldPath.documentId(), 'in', chunk).get();
+      snap.docs.forEach(d => { userCache[d.id] = { uid: d.id, ...d.data() }; });
+    }));
+  }
+  return uids.map(u => userCache[u] || { uid: u, name: u });
+}
+
+/* ═══════════════════════════════════════════════
+   DELETE GROUP
+═══════════════════════════════════════════════ */
+async function deleteGroup(groupId, groupName) {
+  if (!confirm(`Delete group "${groupName}"? This cannot be undone.`)) return;
+  try {
+    await db.collection('groups').doc(groupId).delete();
+    showToast('Group deleted successfully.', 'success');
+  } catch (err) {
+    showToast('Failed to delete group: ' + err.message, 'error');
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   CREATE GROUP
+═══════════════════════════════════════════════ */
+function toggleCreateGroup() {
+  const panel = document.getElementById('createGroupPanel');
+  const btn   = document.getElementById('toggleCreateGroupBtn');
+  const isOpen = panel.classList.contains('open');
+  panel.classList.toggle('open');
+  btn.classList.toggle('active-action', !isOpen);
+  if (isOpen) {
+    document.getElementById('groupName').value = '';
+    document.getElementById('groupSubject').value = '';
+    document.getElementById('groupDescription').value = '';
+  }
+}
+
+async function createGroup() {
+  const name    = document.getElementById('groupName').value.trim();
+  const subject = document.getElementById('groupSubject').value.trim();
+  const desc    = document.getElementById('groupDescription').value.trim();
+
+  if (!name)    { showToast('Please enter a group name.', 'error'); return; }
+  if (!subject) { showToast('Please enter a subject.', 'error'); return; }
+
+  try {
+    await db.collection('groups').add({
+      name,
+      subject,
+      description: desc,
+      createdBy: viewingUID || currentUser.uid,
+      members: [viewingUID || currentUser.uid],
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    showToast('Group created successfully!', 'success');
+    toggleCreateGroup();
+  } catch (err) {
+    showToast('Failed to create group: ' + err.message, 'error');
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   RESOURCE APPROVAL
+═══════════════════════════════════════════════ */
+function renderApprovalList(items) {
+  const container = document.getElementById('approvalContainer');
+  if (items.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">✅</div>
+        <div class="empty-state-title">All caught up!</div>
+        <div class="empty-state-text">No resources pending approval at the moment.</div>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = items.map(r => `
+    <div class="resource-row" id="rr-${r.id}">
+      <div class="resource-icon">${getFileIcon(r.type || r.fileType || '')}</div>
+      <div style="flex:1;min-width:0;">
+        <div class="resource-title">${escHtml(r.title || r.name || 'Untitled Resource')}</div>
+        <div class="resource-meta">
+          📚 ${escHtml(r.subject || '—')} &nbsp;·&nbsp;
+          👤 ${escHtml(r.uploadedByName || r.uploadedBy || '—')} &nbsp;·&nbsp;
+          📅 ${formatDate(r.uploadedAt || r.createdAt)}
+          ${r.fileUrl ? `&nbsp;·&nbsp; <a href="${r.fileUrl}" target="_blank" style="color:#8b5cf6;text-decoration:none;font-weight:600;">View File ↗</a>` : ''}
+        </div>
+        ${r.description ? `<div style="font-size:0.78rem;color:#9ca3af;margin-top:2px;">${escHtml(r.description)}</div>` : ''}
+      </div>
+      <div style="display:flex;gap:0.5rem;flex-shrink:0;flex-wrap:wrap;">
+        <button class="btn-success" onclick="approveResource('${r.id}')">✔ Approve</button>
+        <button class="btn-danger" onclick="rejectResource('${r.id}', '${escHtml(r.title||'')}', '${r.fileUrl||''}')">✕ Reject</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function getFileIcon(type) {
+  if (!type) return '📄';
+  type = type.toLowerCase();
+  if (type.includes('pdf'))   return '📕';
+  if (type.includes('image') || type.includes('png') || type.includes('jpg')) return '🖼️';
+  if (type.includes('video')) return '🎬';
+  if (type.includes('word') || type.includes('doc')) return '📝';
+  if (type.includes('excel') || type.includes('sheet') || type.includes('xls')) return '📊';
+  if (type.includes('ppt') || type.includes('presentation')) return '📊';
+  if (type.includes('zip') || type.includes('rar')) return '📦';
+  return '📄';
+}
+
+async function approveResource(resourceId) {
+  try {
+    await db.collection('resources').doc(resourceId).update({ approved: true, approvedAt: firebase.firestore.FieldValue.serverTimestamp(), approvedBy: currentUser.uid });
+    showToast('Resource approved!', 'success');
+  } catch (err) {
+    showToast('Approval failed: ' + err.message, 'error');
+  }
+}
+
+async function rejectResource(resourceId, title, fileUrl) {
+  if (!confirm(`Reject and delete "${title}"? The file will be removed.`)) return;
+  try {
+    if (fileUrl) {
+      try {
+        const ref = storage.refFromURL(fileUrl);
+        await ref.delete();
+      } catch (e) { /* file might not exist */ }
+    }
+    await db.collection('resources').doc(resourceId).delete();
+    showToast('Resource rejected and removed.', 'success');
+  } catch (err) {
+    showToast('Rejection failed: ' + err.message, 'error');
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   STUDENT SEARCH
+═══════════════════════════════════════════════ */
+async function searchStudent() {
+  const q = document.getElementById('studentSearchInput').value.trim().toLowerCase();
+  const container = document.getElementById('studentSearchResult');
+
+  if (!q) { showToast('Enter a name or email to search.', 'error'); return; }
+
+  container.innerHTML = '<div class="flex-center" style="padding:1.5rem;"><div class="spinner"></div></div>';
+
+  try {
+    const snap = await db.collection('users').get();
+    const matched = snap.docs
+      .map(d => ({ id: d.id, ...d.data() }))
+      .filter(u => (u.role?.toLowerCase() === 'student' || !u.role) &&
+        ((u.name || '').toLowerCase().includes(q) ||
+         (u.email || '').toLowerCase().includes(q)));
+
+    if (matched.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state" style="padding:1.5rem 0;">
+          <div class="empty-state-icon">🔍</div>
+          <div class="empty-state-title">No students found</div>
+          <div class="empty-state-text">Try a different name or email address.</div>
+        </div>`;
+      return;
+    }
+
+    // Show mini cards
+    container.innerHTML = matched.map(u => `
+      <div class="student-mini-card" style="margin-bottom:0.75rem;">
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+          <div class="user-avatar" style="width:44px;height:44px;font-size:0.95rem;flex-shrink:0;">${getInitials(u.name)}</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:0.95rem;color:#111827;" class="${htmlEl.classList.contains('dark')?'':''}">
+              ${escHtml(u.name || '—')}
+            </div>
+            <div style="font-size:0.78rem;color:#6b7280;">${escHtml(u.email || '—')}</div>
+            <div style="margin-top:4px;display:flex;gap:6px;flex-wrap:wrap;">
+              <span class="badge badge-purple">${escHtml(u.role || 'Student')}</span>
+              ${u.semester ? `<span class="badge badge-green">Sem ${escHtml(String(u.semester))}</span>` : ''}
+              ${u.rollNo ? `<span class="badge badge-yellow">Roll: ${escHtml(String(u.rollNo))}</span>` : ''}
+            </div>
+          </div>
+          <a href="students-hub.html?uid=${u.id}" target="_blank" class="btn-secondary" style="text-decoration:none;flex-shrink:0;">
+            📊 View Hub ↗
+          </a>
+        </div>
+        <div style="margin-top:0.75rem;display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:0.5rem;" id="stats-${u.id}">
+          <div class="flex-center" style="padding:0.5rem;"><div class="spinner" style="width:20px;height:20px;border-width:2px;"></div></div>
+        </div>
+      </div>
+    `).join('');
+
+    // Fetch extra stats per student
+    matched.forEach(u => fetchStudentStats(u.id));
+
+  } catch (err) {
+    container.innerHTML = `<p style="color:#ef4444;font-size:0.85rem;">Error: ${err.message}</p>`;
+  }
+}
+
+async function fetchStudentStats(uid) {
+  const el = document.getElementById('stats-' + uid);
+  if (!el) return;
+  try {
+    const [attSnap, testSnap, assignSnap] = await Promise.all([
+      db.collection('attendance').where('uid', '==', uid).get().catch(() => ({ size: 0, docs: [] })),
+      db.collection('testResults').where('uid', '==', uid).limit(5).get().catch(() => ({ size: 0, docs: [] })),
+      db.collection('assignments').where('submittedBy', 'array-contains', uid).get().catch(() => ({ size: 0, docs: [] }))
+    ]);
+
+    // Attendance: count present
+    const attDocs = attSnap.docs || [];
+    const totalAtt = attDocs.length;
+    const presentAtt = attDocs.filter(d => {
+      const data = d.data();
+      return data.present === true || data.status === 'present';
+    }).length;
+    const attPct = totalAtt > 0 ? Math.round((presentAtt / totalAtt) * 100) : null;
+
+    const testDocs = (testSnap.docs || []).slice(0,3);
+
+    el.innerHTML = `
+      <div style="background:rgba(0,0,0,0.03);border-radius:10px;padding:8px 10px;">
+        <div style="font-size:0.68rem;font-weight:700;color:#9ca3af;text-transform:uppercase;margin-bottom:2px;">Attendance</div>
+        <div style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:1.1rem;color:${attPct===null?'#9ca3af':attPct>=75?'#16a34a':'#dc2626'};">
+          ${attPct === null ? '—' : attPct + '%'}
+        </div>
+      </div>
+      <div style="background:rgba(0,0,0,0.03);border-radius:10px;padding:8px 10px;">
+        <div style="font-size:0.68rem;font-weight:700;color:#9ca3af;text-transform:uppercase;margin-bottom:2px;">Test Results</div>
+        <div style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:0.9rem;color:#374151;">
+          ${testDocs.length > 0 ? testDocs.map(d => {
+            const data = d.data();
+            return `<span style="display:inline-block;margin-right:4px;">${data.subject || data.testName || '—'}: <b>${data.score ?? '?'}</b></span>`;
+          }).join('') : '<span style="color:#9ca3af;font-size:0.8rem;">No tests</span>'}
+        </div>
+      </div>
+      <div style="background:rgba(0,0,0,0.03);border-radius:10px;padding:8px 10px;">
+        <div style="font-size:0.68rem;font-weight:700;color:#9ca3af;text-transform:uppercase;margin-bottom:2px;">Assignments</div>
+        <div style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:1.1rem;color:#374151;">
+          ${assignSnap.size || 0} submitted
+        </div>
+      </div>
+    `;
+  } catch (err) {
+    if (el) el.innerHTML = '';
+  }
+}
+
+/* Enter key search */
+document.getElementById('studentSearchInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') searchStudent();
+});
+document.getElementById('adminLecturerSearch') && document.getElementById('adminLecturerSearch').addEventListener('keydown', e => {
+  if (e.key === 'Enter') adminSearchLecturer();
+});
+
+/* ═══════════════════════════════════════════════
+   ATTENDANCE MODAL
+═══════════════════════════════════════════════ */
+function populateAttGroupSelect(groups) {
+  const sel = document.getElementById('attGroupSelect');
+  const current = sel.value;
+  sel.innerHTML = '<option value="">— Select a group —</option>';
+  groups.forEach(g => {
+    const opt = document.createElement('option');
+    opt.value = g.id;
+    opt.textContent = g.name + ' (' + g.subject + ')';
+    opt.dataset.members = JSON.stringify(g.members || []);
+    sel.appendChild(opt);
+  });
+  if (current) sel.value = current;
+}
+
+function showAttendanceModal() {
+  const modal = document.getElementById('attModal');
+  modal.style.display = 'flex';
+  // Set today's date
+  const today = new Date().toISOString().slice(0,10);
+  document.getElementById('attDate').value = today;
+  document.getElementById('attStudentsList').innerHTML = '';
+  document.getElementById('attGroupSelect').value = '';
+}
+
+function closeAttModal() {
+  document.getElementById('attModal').style.display = 'none';
+}
+
+async function loadAttendanceStudents() {
+  const sel = document.getElementById('attGroupSelect');
+  const groupId = sel.value;
+  const container = document.getElementById('attStudentsList');
+  container.innerHTML = '';
+  if (!groupId) return;
+
+  const opt = sel.options[sel.selectedIndex];
+  let memberUids = [];
+  try { memberUids = JSON.parse(opt.dataset.members || '[]'); } catch(e) {}
+
+  if (memberUids.length === 0) {
+    container.innerHTML = '<p style="color:#9ca3af;font-size:0.82rem;">No members in this group.</p>';
+    return;
+  }
+
+  container.innerHTML = '<div class="flex-center" style="padding:1rem;"><div class="spinner"></div></div>';
+
+  try {
+    const members = await fetchUsersByUids(memberUids);
+    container.innerHTML = `
+      <div style="margin-bottom:0.5rem;display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-size:0.75rem;font-weight:700;color:#9ca3af;text-transform:uppercase;">Students</span>
+        <div style="display:flex;gap:0.5rem;">
+          <button class="btn-secondary" style="height:30px;font-size:0.72rem;padding:0 10px;" onclick="markAllAttendance(true)">✓ All Present</button>
+          <button class="btn-secondary" style="height:30px;font-size:0.72rem;padding:0 10px;" onclick="markAllAttendance(false)">✗ All Absent</button>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:0.4rem;" id="attList">
+        ${members.map(m => `
+          <div class="att-student">
+            <span class="att-name">${escHtml(m.name || m.email || m.uid)}</span>
+            <button class="att-toggle" data-uid="${m.uid || m.id}" onclick="this.classList.toggle('present')" title="Toggle present/absent"></button>
+          </div>
+        `).join('')}
+      </div>`;
+  } catch (err) {
+    container.innerHTML = `<p style="color:#ef4444;font-size:0.82rem;">Error loading students: ${err.message}</p>`;
+  }
+}
+
+function markAllAttendance(present) {
+  document.querySelectorAll('#attList .att-toggle').forEach(btn => {
+    if (present) btn.classList.add('present');
+    else btn.classList.remove('present');
+  });
+}
+
+async function saveAttendance() {
+  const groupId = document.getElementById('attGroupSelect').value;
+  const date = document.getElementById('attDate').value;
+
+  if (!groupId) { showToast('Please select a group.', 'error'); return; }
+  if (!date)    { showToast('Please select a date.', 'error'); return; }
+
+  const toggles = document.querySelectorAll('#attList .att-toggle');
+  if (toggles.length === 0) { showToast('No students to mark.', 'error'); return; }
+
+  const records = [];
+  toggles.forEach(t => {
+    records.push({ uid: t.dataset.uid, present: t.classList.contains('present') });
+  });
+
+  try {
+    const batch = db.batch();
+    records.forEach(r => {
+      const ref = db.collection('attendance').doc(`${r.uid}_${groupId}_${date}`);
+      batch.set(ref, {
+        uid: r.uid,
+        groupId,
+        date,
+        present: r.present,
+        markedBy: currentUser.uid,
+        markedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    });
+    await batch.commit();
+    showToast(`Attendance saved for ${records.length} student${records.length!==1?'s':''}!`, 'success');
+    closeAttModal();
+  } catch (err) {
+    showToast('Failed to save attendance: ' + err.message, 'error');
+  }
+}
+
+// Close modal on backdrop click
+document.getElementById('attModal').addEventListener('click', function(e) {
+  if (e.target === this) closeAttModal();
+});
+</script>
+  <script src="js/site-nav.js"></script>
+</body>
+</html>
+
+

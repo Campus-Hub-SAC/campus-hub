@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>About – Sri Aurobindo College BCA</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { darkMode: 'class' };</script>
+
+  <!-- Firebase Compat SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
+
+  <style>
+    /* ═══════════ RESET & FONTS ═══════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --pink:   #ec4899;
+      --indigo: #6366f1;
+      --violet: #8b5cf6;
+      --grad:   linear-gradient(135deg, #ec4899 0%, #8b5cf6 50%, #6366f1 100%);
+      --grad-h: linear-gradient(135deg, #db2777 0%, #7c3aed 50%, #4f46e5 100%);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      background-color: #f9fafb;
+      color: #111827;
+      transition: background-color 0.4s ease, color 0.4s ease;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+
+    html.dark body {
+      background-color: #000000;
+      color: #f9fafb;
+    }
+
+    /* ═══════════ DARK TOGGLE ═══════════ */
+    #darkToggle {
+      position: fixed;
+      top: 1rem; right: 1rem;
+      z-index: 999;
+      width: 42px; height: 42px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      background: #ffffff;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.06);
+      transition: background 0.3s, box-shadow 0.3s, transform 0.2s;
+      outline: none;
+    }
+    #darkToggle:hover {
+      transform: scale(1.08);
+      box-shadow: 0 4px 18px rgba(0,0,0,0.16);
+    }
+    html.dark #darkToggle {
+      background: #1f2937;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06);
+    }
+
+    /* ═══════════ NAVBAR ═══════════ */
+    .navbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 900;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      padding: 0 1.25rem;
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(0,0,0,0.07);
+      transition: background 0.4s ease, border-color 0.4s ease;
+    }
+    html.dark .navbar {
+      background: rgba(0,0,0,0.82);
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+
+    .navbar-inner {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    /* Brand */
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+    .nav-logo {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      background: var(--grad);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 800;
+      font-size: 0.85rem;
+      color: #fff;
+      letter-spacing: 0.5px;
+      flex-shrink: 0;
+    }
+    .nav-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 800;
+      font-size: 0.95rem;
+      color: #111827;
+      line-height: 1.1;
+      display: flex;
+      flex-direction: column;
+    }
+    html.dark .nav-title { color: #f9fafb; }
+    .nav-title span {
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: var(--grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Nav links */
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 0.15rem;
+      margin-left: auto;
+    }
+    .nav-link {
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #6b7280;
+      padding: 0.4rem 0.65rem;
+      border-radius: 8px;
+      transition: color 0.2s, background 0.2s;
+      white-space: nowrap;
+    }
+    .nav-link:hover { color: #111827; background: rgba(0,0,0,0.05); }
+    html.dark .nav-link { color: #9ca3af; }
+    html.dark .nav-link:hover { color: #f9fafb; background: rgba(255,255,255,0.07); }
+    .nav-link.active {
+      color: #8b5cf6;
+      background: rgba(139,92,246,0.09);
+    }
+    html.dark .nav-link.active {
+      color: #a78bfa;
+      background: rgba(139,92,246,0.15);
+    }
+
+    /* Admin link */
+    .nav-link-admin {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #fff !important;
+      background: var(--grad) !important;
+      padding: 0.38rem 0.75rem;
+      border-radius: 8px;
+      letter-spacing: 0.03em;
+      transition: opacity 0.2s, transform 0.15s !important;
+    }
+    .nav-link-admin:hover { opacity: 0.88; transform: translateY(-1px); }
+
+    /* User chip */
+    .user-chip {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      background: rgba(139,92,246,0.09);
+      border: 1px solid rgba(139,92,246,0.2);
+      border-radius: 999px;
+      padding: 0.28rem 0.75rem 0.28rem 0.3rem;
+      cursor: default;
+      flex-shrink: 0;
+    }
+    html.dark .user-chip {
+      background: rgba(139,92,246,0.14);
+      border-color: rgba(139,92,246,0.28);
+    }
+    .user-avatar {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: var(--grad);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.65rem;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: 0.5px;
+      flex-shrink: 0;
+    }
+    .user-name {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #374151;
+      max-width: 90px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    html.dark .user-name { color: #d1d5db; }
+
+    /* Hamburger */
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 8px;
+      transition: background 0.2s;
+      margin-left: auto;
+    }
+    .hamburger:hover { background: rgba(0,0,0,0.06); }
+    html.dark .hamburger:hover { background: rgba(255,255,255,0.08); }
+    .hamburger span {
+      display: block;
+      width: 22px; height: 2px;
+      background: #374151;
+      border-radius: 2px;
+      transition: transform 0.3s, opacity 0.3s;
+    }
+    html.dark .hamburger span { background: #d1d5db; }
+    .hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .hamburger.open span:nth-child(2) { opacity: 0; }
+    .hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+    /* Mobile menu */
+    .mobile-menu {
+      display: none;
+      position: fixed;
+      top: 64px; left: 0; right: 0;
+      z-index: 850;
+      background: rgba(255,255,255,0.97);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+      padding: 1rem 1.25rem 1.25rem;
+      flex-direction: column;
+      gap: 0.35rem;
+      animation: slideDown 0.2s ease;
+    }
+    html.dark .mobile-menu {
+      background: rgba(0,0,0,0.96);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .mobile-menu.open { display: flex; }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .mobile-nav-link {
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #374151;
+      padding: 0.6rem 0.75rem;
+      border-radius: 10px;
+      transition: background 0.2s, color 0.2s;
+    }
+    .mobile-nav-link:hover { background: rgba(139,92,246,0.08); color: #8b5cf6; }
+    html.dark .mobile-nav-link { color: #d1d5db; }
+    html.dark .mobile-nav-link:hover { background: rgba(139,92,246,0.14); color: #a78bfa; }
+    .mobile-nav-link.active { color: #8b5cf6; background: rgba(139,92,246,0.09); }
+    html.dark .mobile-nav-link.active { color: #a78bfa; background: rgba(139,92,246,0.15); }
+    .mobile-divider { height: 1px; background: rgba(0,0,0,0.07); margin: 0.35rem 0; }
+    html.dark .mobile-divider { background: rgba(255,255,255,0.07); }
+
+    /* ═══════════ PAGE LAYOUT ═══════════ */
+    .page-body {
+      padding-top: 64px;
+    }
+
+    .page-wrap {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2.5rem 1.25rem 3rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.75rem;
+    }
+
+    /* ═══════════ PAGE HEADING ═══════════ */
+    .page-heading {
+      text-align: center;
+      margin-bottom: 0.5rem;
+    }
+    .page-heading h1 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: clamp(2rem, 5vw, 2.8rem);
+      font-weight: 800;
+      color: #111827;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+    }
+    html.dark .page-heading h1 { color: #f9fafb; }
+    .page-heading .subtitle {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-top: 0.4rem;
+      background: var(--grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ═══════════ CARDS ═══════════ */
+    .card {
+      background: #ffffff;
+      border-radius: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.04);
+      transition: background 0.4s ease, box-shadow 0.4s ease;
+      overflow: hidden;
+    }
+    html.dark .card {
+      background: #111827;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.4), 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05);
+    }
+    .card-accent {
+      height: 3px;
+      background: var(--grad);
+      width: 100%;
+    }
+    .card-body {
+      padding: 1.75rem 2rem;
+    }
+    @media (max-width: 600px) {
+      .card-body { padding: 1.25rem 1.1rem; }
+    }
+
+    /* ═══════════ COLLEGE OVERVIEW CARD ═══════════ */
+    .overview-header {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+      margin-bottom: 1.4rem;
+      flex-wrap: wrap;
+    }
+    .sac-logo {
+      width: 72px; height: 72px;
+      border-radius: 18px;
+      background: var(--grad);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 800;
+      font-size: 1.5rem;
+      color: #fff;
+      letter-spacing: 1px;
+      box-shadow: 0 8px 24px rgba(139,92,246,0.35), 0 2px 8px rgba(236,72,153,0.2);
+      position: relative;
+      flex-shrink: 0;
+    }
+    .sac-logo::after {
+      content: '';
+      position: absolute;
+      top: 8px; left: 10px;
+      width: 40%; height: 28%;
+      background: rgba(255,255,255,0.28);
+      border-radius: 6px;
+      filter: blur(2px);
+    }
+    .overview-title h2 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: #111827;
+      letter-spacing: -0.01em;
+      line-height: 1.2;
+    }
+    html.dark .overview-title h2 { color: #f9fafb; }
+    .overview-title p {
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      background: var(--grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-top: 0.25rem;
+    }
+
+    .overview-body p {
+      font-size: 0.93rem;
+      line-height: 1.75;
+      color: #4b5563;
+      margin-bottom: 0.85rem;
+    }
+    .overview-body p:last-child { margin-bottom: 0; }
+    html.dark .overview-body p { color: #9ca3af; }
+
+    /* Tags row */
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 1.2rem;
+    }
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.3rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      background: rgba(139,92,246,0.09);
+      color: #7c3aed;
+      border: 1px solid rgba(139,92,246,0.18);
+      transition: background 0.2s;
+    }
+    html.dark .tag {
+      background: rgba(139,92,246,0.15);
+      color: #c4b5fd;
+      border-color: rgba(139,92,246,0.28);
+    }
+
+    /* ═══════════ MISSION & VISION ═══════════ */
+    .mv-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+      margin-top: 0.25rem;
+    }
+    @media (max-width: 600px) {
+      .mv-grid { grid-template-columns: 1fr; }
+    }
+    .mv-box {
+      border-radius: 16px;
+      padding: 1.25rem 1.3rem;
+      background: rgba(139,92,246,0.04);
+      border: 1px solid rgba(139,92,246,0.12);
+      transition: background 0.3s;
+    }
+    html.dark .mv-box {
+      background: rgba(139,92,246,0.08);
+      border-color: rgba(139,92,246,0.2);
+    }
+    .mv-box:hover { background: rgba(139,92,246,0.08); }
+    html.dark .mv-box:hover { background: rgba(139,92,246,0.13); }
+    .mv-icon {
+      width: 38px; height: 38px;
+      border-radius: 10px;
+      background: var(--grad);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.05rem;
+      color: #fff;
+      margin-bottom: 0.8rem;
+      flex-shrink: 0;
+    }
+    .mv-box h3 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      background: var(--grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.6rem;
+    }
+    .mv-box p {
+      font-size: 0.88rem;
+      line-height: 1.7;
+      color: #4b5563;
+    }
+    html.dark .mv-box p { color: #9ca3af; }
+
+    /* ═══════════ SECTION LABEL ═══════════ */
+    .section-label {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      margin-bottom: 1.1rem;
+    }
+    .section-label-icon {
+      width: 34px; height: 34px;
+      border-radius: 9px;
+      background: var(--grad);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .section-label h2 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #111827;
+      letter-spacing: -0.01em;
+    }
+    html.dark .section-label h2 { color: #f9fafb; }
+
+    /* ═══════════ CONTACT CARD ═══════════ */
+    .contact-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-top: 0.25rem;
+    }
+    .contact-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+    .contact-icon-wrap {
+      width: 40px; height: 40px;
+      border-radius: 12px;
+      background: rgba(139,92,246,0.09);
+      border: 1px solid rgba(139,92,246,0.18);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+      transition: background 0.2s;
+    }
+    html.dark .contact-icon-wrap {
+      background: rgba(139,92,246,0.14);
+      border-color: rgba(139,92,246,0.28);
+    }
+    .contact-row:hover .contact-icon-wrap {
+      background: rgba(139,92,246,0.16);
+    }
+    .contact-info { flex: 1; min-width: 0; }
+    .contact-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #9ca3af;
+      margin-bottom: 0.18rem;
+    }
+    .contact-value {
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: #111827;
+      word-break: break-word;
+    }
+    html.dark .contact-value { color: #f3f4f6; }
+    .contact-divider {
+      height: 1px;
+      background: rgba(0,0,0,0.06);
+      margin: 0.15rem 0;
+    }
+    html.dark .contact-divider { background: rgba(255,255,255,0.06); }
+
+    /* ═══════════ FOOTER ═══════════ */
+    .site-footer {
+      background: #ffffff;
+      border-top: 1px solid rgba(0,0,0,0.07);
+      padding: 1.5rem 1.25rem;
+      text-align: center;
+      transition: background 0.4s, border-color 0.4s;
+    }
+    html.dark .site-footer {
+      background: #0a0a0a;
+      border-top: 1px solid rgba(255,255,255,0.07);
+    }
+    .footer-inner {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .footer-logo-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      margin-bottom: 0.5rem;
+    }
+    .footer-logo {
+      width: 28px; height: 28px;
+      border-radius: 7px;
+      background: var(--grad);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 800;
+      font-size: 0.65rem;
+      color: #fff;
+    }
+    .footer-brand {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 800;
+      font-size: 0.88rem;
+      color: #111827;
+    }
+    html.dark .footer-brand { color: #f9fafb; }
+    .footer-copy {
+      font-size: 0.75rem;
+      color: #9ca3af;
+      margin-top: 0.2rem;
+    }
+
+    /* ═══════════ TOAST ═══════════ */
+    #toastContainer {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      pointer-events: none;
+    }
+    .toast {
+      min-width: 240px;
+      max-width: 340px;
+      background: #1f2937;
+      color: #f9fafb;
+      border-radius: 14px;
+      padding: 0.75rem 1.1rem;
+      font-size: 0.85rem;
+      font-weight: 500;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.22);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      pointer-events: all;
+      animation: toastIn 0.3s cubic-bezier(0.34,1.56,0.64,1) forwards;
+      border-left: 3px solid #8b5cf6;
+    }
+    html.dark .toast { background: #111827; }
+    .toast.success { border-left-color: #10b981; }
+    .toast.error   { border-left-color: #ef4444; }
+    .toast.info    { border-left-color: #6366f1; }
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(16px) scale(0.95); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes toastOut {
+      from { opacity: 1; transform: translateY(0) scale(1); }
+      to   { opacity: 0; transform: translateY(8px) scale(0.95); }
+    }
+    .toast.hide { animation: toastOut 0.25s ease forwards; }
+
+    /* ═══════════ UTILITIES ═══════════ */
+    .flex-center { display: flex; align-items: center; justify-content: center; }
+    .text-gradient {
+      background: var(--grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Responsive nav */
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .hamburger { display: flex; }
+      #darkToggle { top: 0.85rem; right: 4rem; }
+    }
+  </style>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- ═══ DARK MODE TOGGLE ═══ -->
+  <button id="darkToggle" title="Toggle dark mode">🌙</button>
+
+  <!-- ═══ NAVBAR ═══ -->
+  <nav class="navbar" role="navigation" aria-label="Main navigation">
+    <div class="navbar-inner">
+      <!-- Brand -->
+      <a href="Home.html" class="nav-brand">
+        <div class="nav-logo">SAC</div>
+        <div class="nav-title">
+          Sri Aurobindo College
+          <span>BCA Department</span>
+        </div>
+      </a>
+
+      <!-- Desktop links -->
+      <div class="nav-links" id="navLinks">
+        <a href="Home.html"       class="nav-link">Home</a>
+        <a href="resources.html"  class="nav-link">Resources</a>
+        <a href="upload.html"     class="nav-link">Upload</a>
+        <a href="profile.html"    class="nav-link">Profile</a>
+        <a href="events.html"     class="nav-link">Events</a>
+        <a href="Home.html"  class="nav-link">Campus Hub</a>
+        <a href="about.html"      class="nav-link active">About</a>
+        <a href="admin.html"      class="nav-link nav-link-admin" id="adminLink" style="display:none;">Admin</a>
+      </div>
+
+      <!-- User chip (desktop) -->
+      <div class="user-chip" id="userChip" style="display:none; margin-left:0.75rem;">
+        <div class="user-avatar" id="userAvatar">?</div>
+        <span class="user-name" id="userName">User</span>
+      </div>
+      <button class="btn-logout" id="logoutBtn" style="display:none;" onclick="handleLogout()">Logout</button>
+
+      <!-- Hamburger -->
+      <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ═══ MOBILE MENU ═══ -->
+  <div class="mobile-menu" id="mobileMenu" role="navigation" aria-label="Mobile navigation">
+    <a href="Home.html"       class="mobile-nav-link">🏠 Home</a>
+    <a href="resources.html"  class="mobile-nav-link">📚 Resources</a>
+    <a href="upload.html"     class="mobile-nav-link">⬆️ Upload</a>
+    <a href="profile.html"    class="mobile-nav-link">👤 Profile</a>
+    <a href="events.html"     class="mobile-nav-link">📅 Events</a>
+    <a href="Home.html"  class="mobile-nav-link">🏫 Campus Hub</a>
+    <a href="about.html"      class="mobile-nav-link active">ℹ️ About</a>
+    <div class="mobile-divider"></div>
+    <a href="admin.html"      class="mobile-nav-link nav-link-admin" id="adminLinkMobile" style="display:none;">⚙️ Admin</a>
+    <!-- Mobile user chip -->
+    <div class="mobile-divider" id="mobileUserDivider" style="display:none;"></div>
+    <div class="user-chip" id="mobileUserChip" style="display:none; width:fit-content;">
+      <div class="user-avatar" id="mobileUserAvatar">?</div>
+      <span class="user-name" id="mobileUserName">User</span>
+    </div>
+  </div>
+
+  <!-- ═══ MAIN CONTENT ═══ -->
+  <div class="page-body">
+    <main class="page-wrap">
+
+      <!-- Page Heading -->
+      <div class="page-heading">
+        <h1>About</h1>
+        <p class="subtitle">Sri Aurobindo College — BCA Department</p>
+      </div>
+
+      <!-- ── CARD 1: College Overview ── -->
+      <div class="card">
+        <div class="card-accent"></div>
+        <div class="card-body">
+          <!-- Header row with logo -->
+          <div class="overview-header">
+            <div class="sac-logo">SAC</div>
+            <div class="overview-title">
+              <h2>Sri Aurobindo College</h2>
+              <p>Bachelor of Computer Applications</p>
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div class="overview-body">
+            <p>
+              Sri Aurobindo College, affiliated with the University of Delhi and established under the aegis of the Sri Aurobindo Educational Trust, stands as one of Delhi's premier institutions of higher learning. Nestled in the intellectual heart of Malviya Nagar, the college upholds a long-standing tradition of academic excellence, holistic development, and a vibrant campus culture that nurtures curiosity, creativity, and leadership.
+            </p>
+            <p>
+              The Department of Computer Applications offers a rigorous three-year Bachelor of Computer Applications (BCA) programme designed to equip students with a strong foundation in both the theoretical and practical dimensions of computing. The curriculum spans core areas including software development, object-oriented programming, data structures & algorithms, database management systems, web technologies, computer networking, and operating systems — all aligned with the rapidly evolving demands of the global IT industry.
+            </p>
+            <p>
+              Beyond the classroom, the department actively fosters a culture of innovation through hackathons, coding competitions, industry guest lectures, and collaborative project-based learning. Students graduate ready to pursue careers in software engineering, data analytics, cybersecurity, cloud computing, and entrepreneurship, or to further their studies in top-tier postgraduate programmes across India and abroad.
+            </p>
+          </div>
+
+          <!-- Subject tags -->
+          <div class="tag-row">
+            <span class="tag">💻 Software Development</span>
+            <span class="tag">🗄️ Database Management</span>
+            <span class="tag">🌐 Web Technologies</span>
+            <span class="tag">🔗 Computer Networking</span>
+            <span class="tag">📐 Data Structures</span>
+            <span class="tag">🖥️ Operating Systems</span>
+            <span class="tag">☁️ Cloud Computing</span>
+            <span class="tag">🔐 Cybersecurity</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── CARD 2: Mission & Vision ── -->
+      <div class="card">
+        <div class="card-accent"></div>
+        <div class="card-body">
+          <div class="section-label">
+            <div class="section-label-icon">🎯</div>
+            <h2>Mission &amp; Vision</h2>
+          </div>
+
+          <div class="mv-grid">
+            <!-- Mission -->
+            <div class="mv-box">
+              <div class="mv-icon">🚀</div>
+              <h3>Our Mission</h3>
+              <p>
+                To provide quality education in computer applications and equip students with the practical skills, analytical mindset, and professional values needed to excel in the IT industry and contribute meaningfully to a digital society.
+              </p>
+            </div>
+
+            <!-- Vision -->
+            <div class="mv-box">
+              <div class="mv-icon">🌟</div>
+              <h3>Our Vision</h3>
+              <p>
+                To be a center of excellence in computer education, producing skilled, ethical, and innovative professionals who drive the technological advancement of society and inspire the next generation of problem-solvers.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── CARD 3: Contact Information ── -->
+      <div class="card">
+        <div class="card-accent"></div>
+        <div class="card-body">
+          <div class="section-label">
+            <div class="section-label-icon">📬</div>
+            <h2>Contact Information</h2>
+          </div>
+
+          <div class="contact-list">
+            <!-- Address -->
+            <div class="contact-row">
+              <div class="contact-icon-wrap">📍</div>
+              <div class="contact-info">
+                <div class="contact-label">Address</div>
+                <div class="contact-value">Sri Aurobindo College, Malviya Nagar, New Delhi – 110017</div>
+              </div>
+            </div>
+
+            <div class="contact-divider"></div>
+
+            <!-- Email -->
+            <div class="contact-row">
+              <div class="contact-icon-wrap">✉️</div>
+              <div class="contact-info">
+                <div class="contact-label">Email</div>
+                <div class="contact-value">info@sacbca.edu.in</div>
+              </div>
+            </div>
+
+            <div class="contact-divider"></div>
+
+            <!-- Phone -->
+            <div class="contact-row">
+              <div class="contact-icon-wrap">📞</div>
+              <div class="contact-info">
+                <div class="contact-label">Phone</div>
+                <div class="contact-value">+91-11-12345678</div>
+              </div>
+            </div>
+
+            <div class="contact-divider"></div>
+
+            <!-- Working Hours -->
+            <div class="contact-row">
+              <div class="contact-icon-wrap">🕘</div>
+              <div class="contact-info">
+                <div class="contact-label">Working Hours</div>
+                <div class="contact-value">Mon – Sat, 9:00 AM – 4:00 PM</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main><!-- /.page-wrap -->
+  </div><!-- /.page-body -->
+
+  <!-- ═══ FOOTER ═══ -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-logo-row">
+        <div class="footer-logo">SAC</div>
+        <span class="footer-brand">Sri Aurobindo College — BCA Department</span>
+      </div>
+      <p class="footer-copy">© <span id="footerYear"></span> Sri Aurobindo College. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- ═══ TOAST CONTAINER ═══ -->
+  <div id="toastContainer"></div>
+
+  <!-- ═══ SCRIPTS ═══ -->
+  <script>
+    /* ── Firebase Config ── */
+    const firebaseConfig = {
+  apiKey: "AIzaSyCX5g8sPw_iG0HMujrZM8dG7w510c6jpC4",
+  authDomain: "campus-hub-2220b.firebaseapp.com",
+  projectId: "campus-hub-2220b",
+  storageBucket: "campus-hub-2220b.firebasestorage.app",
+  messagingSenderId: "371742140259",
+  appId: "1:371742140259:web:55a2b29fd269689abb5556"
+};
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db   = firebase.firestore();
+
+    /* ── Toast System ── */
+    function showToast(message, type = 'info', duration = 3500) {
+      const container = document.getElementById('toastContainer');
+      const icons = { success: '✅', error: '❌', info: 'ℹ️', warning: '⚠️' };
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.innerHTML = `<span>${icons[type] || 'ℹ️'}</span><span>${message}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.classList.add('hide');
+        toast.addEventListener('animationend', () => toast.remove());
+      }, duration);
+    }
+
+    /* ── Dark Mode ── */
+    const darkToggle = document.getElementById('darkToggle');
+    const htmlEl = document.documentElement;
+
+    function applyDark(isDark) {
+      if (isDark) {
+        htmlEl.classList.add('dark');
+        darkToggle.textContent = '☀️';
+        darkToggle.title = 'Switch to light mode';
+      } else {
+        htmlEl.classList.remove('dark');
+        darkToggle.textContent = '🌙';
+        darkToggle.title = 'Switch to dark mode';
+      }
+    }
+
+    // Load saved preference
+    const savedTheme = localStorage.getItem('theme');
+    applyDark(savedTheme === 'dark');
+
+    darkToggle.addEventListener('click', () => {
+      const isDark = !htmlEl.classList.contains('dark');
+      applyDark(isDark);
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    });
+
+    /* ── Mobile Hamburger ── */
+    const hamburger   = document.getElementById('hamburger');
+    const mobileMenu  = document.getElementById('mobileMenu');
+
+    hamburger.addEventListener('click', () => {
+      const isOpen = mobileMenu.classList.toggle('open');
+      hamburger.classList.toggle('open', isOpen);
+      hamburger.setAttribute('aria-expanded', isOpen);
+    });
+
+    // Close mobile menu on outside click
+    document.addEventListener('click', (e) => {
+      if (!hamburger.contains(e.target) && !mobileMenu.contains(e.target)) {
+        mobileMenu.classList.remove('open');
+        hamburger.classList.remove('open');
+        hamburger.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    /* ── Footer Year ── */
+    document.getElementById('footerYear').textContent = new Date().getFullYear();
+
+    /* ── Helpers ── */
+    function getInitials(name) {
+      if (!name) return '?';
+      return name.trim().split(/\s+/).map(w => w[0]).join('').toUpperCase().slice(0, 2);
+    }
+
+    function setUserChip(displayName) {
+      const initials = getInitials(displayName);
+      const shortName = displayName.split(' ')[0];
+
+      // Desktop
+      document.getElementById('userAvatar').textContent  = initials;
+      document.getElementById('userName').textContent    = shortName;
+      document.getElementById('userChip').style.display  = 'flex';
+      document.getElementById('logoutBtn').style.display = 'inline-flex';
+
+      // Mobile
+      document.getElementById('mobileUserAvatar').textContent = initials;
+      document.getElementById('mobileUserName').textContent   = shortName;
+      document.getElementById('mobileUserChip').style.display = 'flex';
+      document.getElementById('mobileUserDivider').style.display = 'block';
+    }
+
+    function showAdminLinks() {
+      document.getElementById('adminLink').style.display       = 'inline-flex';
+      document.getElementById('adminLinkMobile').style.display = 'block';
+    }
+
+    /* ── Auth State ── */
+    auth.onAuthStateChanged(async (user) => {
+      if (!user) {
+        // Not logged in — redirect
+        showToast('Please log in to continue.', 'error', 2000);
+        setTimeout(() => { window.location.href = 'index.html'; }, 2000);
+        return;
+      }
+
+      // Show user chip
+      const displayName = user.displayName || user.email || 'User';
+      setUserChip(displayName);
+
+      // Fetch role from Firestore
+      try {
+        const snap = await db.collection('users').doc(user.uid).get();
+        if (snap.exists) {
+          const data = snap.data();
+          if (data.role?.toLowerCase() === 'admin') {
+            showAdminLinks();
+          }
+        }
+      } catch (err) {
+        console.warn('Could not fetch user role:', err.message);
+      }
+    });
+
+    function handleLogout() {
+      firebase.auth().signOut().then(() => { window.location.href = 'index.html'; });
+    }
+  </script>
+  <script src="js/site-nav.js"></script>
+</body>
+</html>
+
+

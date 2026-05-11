@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Events – Sri Aurobindo College BCA</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { darkMode: 'class' };</script>
+
+  <!-- Firebase Compat SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
+
+  <style>
+    /* ═══════════ RESET & FONTS ═══════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --pink:   #ec4899;
+      --indigo: #6366f1;
+      --violet: #8b5cf6;
+      --grad:   linear-gradient(135deg, #ec4899 0%, #8b5cf6 50%, #6366f1 100%);
+      --grad-h: linear-gradient(135deg, #db2777 0%, #7c3aed 50%, #4f46e5 100%);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      background-color: #f9fafb;
+      color: #111827;
+      transition: background-color 0.4s ease, color 0.4s ease;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+
+    html.dark body {
+      background-color: #000000;
+      color: #f9fafb;
+    }
+
+    /* ═══════════ NAVBAR ═══════════ */
+    .navbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 1000;
+      height: 64px;
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-bottom: 1px solid rgba(0,0,0,0.07);
+      display: flex;
+      align-items: center;
+      padding: 0 1.5rem;
+      gap: 1rem;
+      transition: background 0.4s ease, border-color 0.4s ease;
+    }
+    html.dark .navbar {
+      background: rgba(0,0,0,0.85);
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    .navbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+    .navbar-logo {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      background: var(--grad);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 800;
+      font-size: 0.85rem;
+      color: #fff;
+      letter-spacing: 0.5px;
+      flex-shrink: 0;
+    }
+    .navbar-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 800;
+      font-size: 0.95rem;
+      color: #111827;
+      line-height: 1.2;
+    }
+    html.dark .navbar-title { color: #f9fafb; }
+    .navbar-subtitle {
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: var(--grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .navbar-links {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      margin-left: auto;
+    }
+    .nav-link {
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #6b7280;
+      text-decoration: none;
+      transition: color 0.2s, background 0.2s;
+      white-space: nowrap;
+    }
+    .nav-link:hover {
+      color: #111827;
+      background: rgba(0,0,0,0.05);
+    }
+    html.dark .nav-link { color: #9ca3af; }
+    html.dark .nav-link:hover {
+      color: #f9fafb;
+      background: rgba(255,255,255,0.07);
+    }
+    .nav-link.active {
+      background: var(--grad);
+      color: #fff !important;
+      -webkit-text-fill-color: #fff;
+    }
+    html.dark .nav-link.active { color: #fff !important; }
+
+    .navbar-user {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-left: 1rem;
+      flex-shrink: 0;
+    }
+    .user-avatar {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      background: var(--grad);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #fff;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .user-name {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #374151;
+      max-width: 100px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    html.dark .user-name { color: #d1d5db; }
+
+    /* Hamburger */
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+      margin-left: auto;
+      padding: 6px;
+      border-radius: 8px;
+      background: none;
+      border: none;
+      outline: none;
+    }
+    .hamburger span {
+      display: block;
+      width: 22px; height: 2px;
+      background: #374151;
+      border-radius: 2px;
+      transition: all 0.3s;
+    }
+    html.dark .hamburger span { background: #d1d5db; }
+    .mobile-menu {
+      display: none;
+      position: fixed;
+      top: 64px; left: 0; right: 0;
+      background: rgba(255,255,255,0.97);
+      backdrop-filter: blur(18px);
+      border-bottom: 1px solid rgba(0,0,0,0.07);
+      padding: 1rem 1.5rem;
+      flex-direction: column;
+      gap: 0.5rem;
+      z-index: 999;
+    }
+    html.dark .mobile-menu {
+      background: rgba(0,0,0,0.97);
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    .mobile-menu.open { display: flex; }
+    .mobile-menu .nav-link { width: 100%; padding: 10px 14px; }
+
+    @media (max-width: 768px) {
+      .navbar-links { display: none; }
+      .navbar-user { display: none; }
+      .hamburger { display: flex; }
+    }
+
+    /* Dark mode toggle */
+    #darkToggle {
+      position: fixed;
+      top: 1rem; right: 1rem;
+      z-index: 1100;
+      width: 42px; height: 42px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      background: #ffffff;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.06);
+      transition: background 0.3s, box-shadow 0.3s, transform 0.2s;
+      outline: none;
+    }
+    #darkToggle:hover {
+      transform: scale(1.08);
+      box-shadow: 0 4px 18px rgba(0,0,0,0.16);
+    }
+    html.dark #darkToggle {
+      background: #1f2937;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06);
+    }
+
+    /* ═══════════ PAGE LAYOUT ═══════════ */
+    .page-wrap {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 3rem;
+      display: flex;
+      flex-direction: column;
+    }
+    .main-content {
+      padding-top: 80px;
+    }
+
+    /* ═══════════ CARDS ═══════════ */
+    .card {
+      background: #ffffff;
+      border-radius: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.04);
+      transition: background 0.4s ease, box-shadow 0.4s ease;
+      overflow: hidden;
+    }
+    html.dark .card {
+      background: #111827;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.4), 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05);
+    }
+    .card-accent {
+      height: 3px;
+      background: var(--grad);
+      width: 100%;
+    }
+    .event-card {
+      background: #ffffff;
+      border-radius: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 6px 20px rgba(0,0,0,0.07), 0 0 0 1px rgba(0,0,0,0.04);
+      transition: background 0.4s ease, box-shadow 0.3s ease, transform 0.25s ease;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .event-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.08), 0 16px 40px rgba(139,92,246,0.12), 0 0 0 1px rgba(139,92,246,0.1);
+    }
+    html.dark .event-card {
+      background: #111827;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.4), 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05);
+    }
+    html.dark .event-card:hover {
+      box-shadow: 0 4px 8px rgba(0,0,0,0.5), 0 16px 40px rgba(139,92,246,0.18), 0 0 0 1px rgba(139,92,246,0.2);
+    }
+
+    /* ═══════════ BUTTONS ═══════════ */
+    .btn-primary {
+      border: none;
+      border-radius: 12px;
+      background: var(--grad);
+      color: #fff;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(139,92,246,0.35);
+      transition: box-shadow 0.25s, transform 0.15s;
+      outline: none;
+      padding: 0 1.5rem;
+      height: 46px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--grad-h);
+      opacity: 0;
+      transition: opacity 0.25s;
+    }
+    .btn-primary:hover::before { opacity: 1; }
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(139,92,246,0.4);
+    }
+    .btn-primary:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 8px rgba(139,92,246,0.3);
+    }
+    .btn-primary:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .btn-primary span { position: relative; z-index: 1; }
+    .btn-primary svg { position: relative; z-index: 1; }
+
+    .btn-danger {
+      border: 1.5px solid #fecaca;
+      border-radius: 10px;
+      background: #fff;
+      color: #ef4444;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 6px 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: background 0.2s, border-color 0.2s, transform 0.15s;
+      outline: none;
+    }
+    .btn-danger:hover {
+      background: #fef2f2;
+      border-color: #ef4444;
+      transform: translateY(-1px);
+    }
+    html.dark .btn-danger {
+      background: #1f2937;
+      border-color: #7f1d1d;
+      color: #f87171;
+    }
+    html.dark .btn-danger:hover {
+      background: #111827;
+      border-color: #ef4444;
+    }
+
+    .btn-cancel {
+      border: 1.5px solid #e5e7eb;
+      border-radius: 12px;
+      background: #fff;
+      color: #374151;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 0 1.5rem;
+      height: 46px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, border-color 0.2s, transform 0.15s;
+      outline: none;
+    }
+    .btn-cancel:hover {
+      background: #f9fafb;
+      border-color: #d1d5db;
+      transform: translateY(-1px);
+    }
+    html.dark .btn-cancel {
+      background: #1f2937;
+      border-color: #374151;
+      color: #e5e7eb;
+    }
+    html.dark .btn-cancel:hover {
+      background: #111827;
+      border-color: #4b5563;
+    }
+
+    /* ═══════════ FORM INPUTS ═══════════ */
+    .field { margin-bottom: 1rem; }
+    .field-label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #374151;
+      margin-bottom: 5px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    html.dark .field-label { color: #9ca3af; }
+
+    .input-wrap { position: relative; }
+    .input-icon {
+      position: absolute;
+      left: 13px; top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.95rem;
+      pointer-events: none;
+      opacity: 0.5;
+    }
+    .form-input, .form-textarea {
+      width: 100%;
+      padding: 0 14px 0 40px;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 12px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: #111827;
+      background: #f9fafb;
+      outline: none;
+      transition: border-color 0.25s, background 0.25s, box-shadow 0.25s;
+    }
+    .form-input { height: 46px; }
+    .form-textarea {
+      height: auto;
+      padding: 12px 14px 12px 40px;
+      resize: vertical;
+      min-height: 90px;
+    }
+    .form-input::placeholder, .form-textarea::placeholder { color: #9ca3af; font-weight: 400; }
+    .form-input:focus, .form-textarea:focus {
+      border-color: #8b5cf6;
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(139,92,246,0.12);
+    }
+    html.dark .form-input, html.dark .form-textarea {
+      background: #1f2937;
+      border-color: #374151;
+      color: #f9fafb;
+    }
+    html.dark .form-input::placeholder, html.dark .form-textarea::placeholder { color: #4b5563; }
+    html.dark .form-input:focus, html.dark .form-textarea:focus {
+      border-color: #8b5cf6;
+      background: #111827;
+      box-shadow: 0 0 0 3px rgba(139,92,246,0.18);
+    }
+
+    /* ═══════════ CREATE EVENT FORM (slide-down) ═══════════ */
+    .form-panel {
+      overflow: hidden;
+      max-height: 0;
+      transition: max-height 0.45s cubic-bezier(0.4,0,0.2,1), opacity 0.35s ease;
+      opacity: 0;
+    }
+    .form-panel.open {
+      max-height: 700px;
+      opacity: 1;
+    }
+    .form-panel-inner {
+      padding: 1.5rem;
+      border-top: 1px solid rgba(0,0,0,0.06);
+    }
+    html.dark .form-panel-inner { border-top-color: rgba(255,255,255,0.06); }
+
+    /* ═══════════ PAGE HEADING ═══════════ */
+    .page-heading {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 800;
+      font-size: 2rem;
+      color: #111827;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+    }
+    html.dark .page-heading { color: #f9fafb; }
+    .text-gradient {
+      background: var(--grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ═══════════ EVENT GRID ═══════════ */
+    .events-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
+    }
+    @media (max-width: 1024px) {
+      .events-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 640px) {
+      .events-grid { grid-template-columns: 1fr; }
+      .page-heading { font-size: 1.55rem; }
+    }
+
+    /* ═══════════ SECTION LABEL ═══════════ */
+    .section-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1rem;
+      font-weight: 800;
+      color: #374151;
+      letter-spacing: -0.01em;
+    }
+    html.dark .section-label { color: #d1d5db; }
+    .section-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 10px;
+      border-radius: 99px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .pill-upcoming {
+      background: rgba(99,102,241,0.12);
+      color: #6366f1;
+    }
+    html.dark .pill-upcoming {
+      background: rgba(99,102,241,0.2);
+      color: #a5b4fc;
+    }
+    .pill-past {
+      background: rgba(107,114,128,0.12);
+      color: #6b7280;
+    }
+    html.dark .pill-past {
+      background: rgba(107,114,128,0.18);
+      color: #9ca3af;
+    }
+
+    /* ═══════════ EVENT CARD INTERNALS ═══════════ */
+    .event-card-top {
+      height: 4px;
+      width: 100%;
+    }
+    .event-card-top.upcoming { background: var(--grad); }
+    .event-card-top.past { background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%); }
+
+    .event-date-badge {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      background: rgba(139,92,246,0.1);
+      flex-shrink: 0;
+    }
+    .event-date-badge.past {
+      background: rgba(107,114,128,0.1);
+    }
+    .event-date-badge .day {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: #6366f1;
+      line-height: 1;
+    }
+    .event-date-badge.past .day { color: #9ca3af; }
+    .event-date-badge .month {
+      font-size: 0.6rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #8b5cf6;
+    }
+    .event-date-badge.past .month { color: #9ca3af; }
+
+    /* ═══════════ TOAST ═══════════ */
+    #toast-container {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+      pointer-events: none;
+    }
+    .toast {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 13px 18px;
+      border-radius: 14px;
+      background: #111827;
+      color: #f9fafb;
+      font-size: 0.875rem;
+      font-weight: 600;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+      pointer-events: auto;
+      animation: slideInToast 0.35s cubic-bezier(0.34,1.56,0.64,1) forwards;
+      max-width: 340px;
+    }
+    html.dark .toast { background: #f9fafb; color: #111827; }
+    .toast.success .toast-icon { color: #10b981; }
+    .toast.error .toast-icon { color: #ef4444; }
+    .toast.info .toast-icon { color: #6366f1; }
+    .toast-icon { font-size: 1.1rem; flex-shrink: 0; }
+    .toast.hide { animation: slideOutToast 0.3s ease forwards; }
+    @keyframes slideInToast {
+      from { opacity: 0; transform: translateX(40px) scale(0.92); }
+      to   { opacity: 1; transform: translateX(0)   scale(1); }
+    }
+    @keyframes slideOutToast {
+      from { opacity: 1; transform: translateX(0)   scale(1); }
+      to   { opacity: 0; transform: translateX(40px) scale(0.9); }
+    }
+
+    /* ═══════════ LOADING / EMPTY STATES ═══════════ */
+    .loading-spinner {
+      width: 36px; height: 36px;
+      border: 3px solid rgba(139,92,246,0.2);
+      border-top-color: #8b5cf6;
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+    }
+    .empty-icon {
+      font-size: 3rem;
+      margin-bottom: 0.75rem;
+      opacity: 0.4;
+    }
+    .empty-text {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #6b7280;
+    }
+    html.dark .empty-text { color: #4b5563; }
+
+    /* ═══════════ FOOTER ═══════════ */
+    footer {
+      margin-top: 3rem;
+      padding: 2rem 1.5rem;
+      text-align: center;
+      border-top: 1px solid rgba(0,0,0,0.06);
+      font-size: 0.82rem;
+      color: #9ca3af;
+      font-weight: 500;
+    }
+    html.dark footer {
+      border-top-color: rgba(255,255,255,0.06);
+      color: #4b5563;
+    }
+    footer .footer-brand {
+      background: var(--grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-weight: 700;
+    }
+
+    /* ═══════════ UTILITIES ═══════════ */
+    .divider {
+      height: 1px;
+      background: rgba(0,0,0,0.06);
+      margin: 1.25rem 0;
+    }
+    html.dark .divider { background: rgba(255,255,255,0.06); }
+  </style>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<!-- ═══ DARK MODE TOGGLE ═══ -->
+<button id="darkToggle" aria-label="Toggle dark mode">🌙</button>
+
+<!-- ═══════════ NAVBAR ═══════════ -->
+<nav class="navbar">
+  <a href="Home.html" class="navbar-brand">
+    <div class="navbar-logo">SA</div>
+    <div>
+      <div class="navbar-title">Sri Aurobindo</div>
+      <div class="navbar-subtitle">BCA Department</div>
+    </div>
+  </a>
+
+  <!-- Desktop Links -->
+  <div class="navbar-links" id="desktopLinks">
+    <a href="Home.html"       class="nav-link">Home</a>
+    <a href="resources.html"  class="nav-link">Resources</a>
+    <a href="upload.html"     class="nav-link">Upload</a>
+    <a href="profile.html"    class="nav-link">Profile</a>
+    <a href="events.html"     class="nav-link active">Events</a>
+    <a href="Home.html" class="nav-link">Campus Hub</a>
+    <a href="admin.html"      class="nav-link" id="adminNavLink" style="display:none;">Admin</a>
+  </div>
+
+  <!-- User Avatar -->
+  <div class="navbar-user" id="navbarUser" style="display:none;">
+    <div class="user-avatar" id="navAvatar">?</div>
+    <span class="user-name" id="navUserName">Loading…</span>
+  </div>
+  <button class="btn-logout" id="logoutBtn" style="display:none;" onclick="handleLogout()">Logout</button>
+
+  <!-- Hamburger -->
+  <button class="hamburger" id="hamburgerBtn" aria-label="Open menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- Mobile Menu -->
+<div class="mobile-menu" id="mobileMenu">
+  <a href="Home.html"       class="nav-link">🏠 Home</a>
+  <a href="resources.html"  class="nav-link">📚 Resources</a>
+  <a href="upload.html"     class="nav-link">⬆️ Upload</a>
+  <a href="profile.html"    class="nav-link">👤 Profile</a>
+  <a href="events.html"     class="nav-link active">🗓️ Events</a>
+  <a href="Home.html" class="nav-link">🏫 Campus Hub</a>
+  <a href="admin.html"      class="nav-link" id="adminMobileLink" style="display:none;">⚙️ Admin</a>
+  <div class="divider"></div>
+  <div style="display:flex;align-items:center;gap:10px;padding:6px 14px;">
+    <div class="user-avatar" id="mobileAvatar" style="width:28px;height:28px;font-size:0.7rem;">?</div>
+    <span id="mobileUserName" style="font-size:0.82rem;font-weight:600;color:#374151;">Loading…</span>
+  </div>
+</div>
+
+<!-- ═══════════ MAIN CONTENT ═══════════ -->
+<main class="main-content">
+  <div class="page-wrap">
+
+    <!-- Page Header -->
+    <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:2rem;">
+      <div>
+        <h1 class="page-heading">Events <span class="text-gradient">Calendar</span></h1>
+        <p style="margin-top:6px;font-size:0.92rem;color:#6b7280;font-weight:500;">
+          Stay updated with college and department events
+        </p>
+      </div>
+      <!-- Create Event Button (admin/lecturer only) -->
+      <button class="btn-primary" id="toggleCreateBtn" style="display:none;" onclick="toggleCreateForm()">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" style="position:relative;z-index:1"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+        <span>Create Event</span>
+      </button>
+    </div>
+
+    <!-- Create Event Form Card -->
+    <div class="card" id="createEventCard" style="margin-bottom:1.75rem;display:none;">
+      <div class="card-accent"></div>
+      <div style="padding:1.25rem 1.5rem;display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="toggleCreateForm()">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:1.2rem;">🗓️</span>
+          <span style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:0.95rem;color:#111827;" class="dark-text">Create New Event</span>
+        </div>
+        <svg id="formChevron" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" style="color:#8b5cf6;transition:transform 0.35s;">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+        </svg>
+      </div>
+      <div class="form-panel" id="createFormPanel">
+        <div class="form-panel-inner">
+          <form id="createEventForm" onsubmit="handleCreateEvent(event)">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+              <div class="field" style="grid-column:1/-1;">
+                <label class="field-label" for="evtTitle">Event Title *</label>
+                <div class="input-wrap">
+                  <span class="input-icon">📌</span>
+                  <input class="form-input" type="text" id="evtTitle" placeholder="e.g. Annual Tech Fest 2025" required />
+                </div>
+              </div>
+              <div class="field">
+                <label class="field-label" for="evtDate">Date *</label>
+                <div class="input-wrap">
+                  <span class="input-icon">📅</span>
+                  <input class="form-input" type="date" id="evtDate" required />
+                </div>
+              </div>
+              <div class="field">
+                <label class="field-label" for="evtLocation">Location</label>
+                <div class="input-wrap">
+                  <span class="input-icon">📍</span>
+                  <input class="form-input" type="text" id="evtLocation" placeholder="e.g. College Auditorium" />
+                </div>
+              </div>
+              <div class="field" style="grid-column:1/-1;">
+                <label class="field-label" for="evtDesc">Description</label>
+                <div class="input-wrap">
+                  <span class="input-icon" style="top:16px;transform:none;">📝</span>
+                  <textarea class="form-textarea" id="evtDesc" placeholder="Describe the event…" rows="3"></textarea>
+                </div>
+              </div>
+            </div>
+            <div style="display:flex;gap:0.75rem;justify-content:flex-end;margin-top:0.5rem;">
+              <button type="button" class="btn-cancel" onclick="toggleCreateForm()">Cancel</button>
+              <button type="submit" class="btn-primary" id="submitEventBtn" style="width:auto;">
+                <span id="submitEventText">✨ Publish Event</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats Row -->
+    <div id="statsRow" style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:2rem;">
+      <div class="card" style="padding:1.25rem;display:flex;align-items:center;gap:12px;">
+        <div style="width:44px;height:44px;border-radius:12px;background:rgba(99,102,241,0.1);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;">🗓️</div>
+        <div>
+          <div style="font-size:0.72rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:0.05em;">Total Events</div>
+          <div id="statTotal" style="font-family:'Plus Jakarta Sans',sans-serif;font-size:1.5rem;font-weight:800;color:#111827;" class="dark-text">–</div>
+        </div>
+      </div>
+      <div class="card" style="padding:1.25rem;display:flex;align-items:center;gap:12px;">
+        <div style="width:44px;height:44px;border-radius:12px;background:rgba(139,92,246,0.1);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;">🚀</div>
+        <div>
+          <div style="font-size:0.72rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:0.05em;">Upcoming</div>
+          <div id="statUpcoming" style="font-family:'Plus Jakarta Sans',sans-serif;font-size:1.5rem;font-weight:800;color:#6366f1;">–</div>
+        </div>
+      </div>
+      <div class="card" style="padding:1.25rem;display:flex;align-items:center;gap:12px;">
+        <div style="width:44px;height:44px;border-radius:12px;background:rgba(107,114,128,0.1);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;">✅</div>
+        <div>
+          <div style="font-size:0.72rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:0.05em;">Past</div>
+          <div id="statPast" style="font-family:'Plus Jakarta Sans',sans-serif;font-size:1.5rem;font-weight:800;color:#9ca3af;">–</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Upcoming Events Section -->
+    <div style="margin-bottom:2rem;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+        <div class="section-label">
+          <span>🚀 Upcoming Events</span>
+          <span class="section-pill pill-upcoming" id="upcomingCount">0</span>
+        </div>
+      </div>
+      <div id="upcomingLoading" style="display:flex;align-items:center;justify-content:center;padding:2rem;">
+        <div class="loading-spinner"></div>
+      </div>
+      <div class="events-grid" id="upcomingGrid" style="display:none;"></div>
+      <div id="upcomingEmpty" class="empty-state" style="display:none;">
+        <div class="empty-icon">📭</div>
+        <div class="empty-text">No upcoming events yet</div>
+        <div style="font-size:0.82rem;color:#9ca3af;margin-top:4px;">Check back soon or create one!</div>
+      </div>
+    </div>
+
+    <!-- Divider -->
+    <div class="divider" style="margin:0.5rem 0 1.75rem;"></div>
+
+    <!-- Past Events Section -->
+    <div style="margin-bottom:2rem;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+        <div class="section-label">
+          <span>🕐 Past Events</span>
+          <span class="section-pill pill-past" id="pastCount">0</span>
+        </div>
+        <button onclick="togglePastEvents()" id="pastToggleBtn" style="font-size:0.8rem;font-weight:600;color:#8b5cf6;background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:4px;">
+          <span id="pastToggleText">Show</span>
+          <svg id="pastChevron" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" style="transition:transform 0.3s;">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </button>
+      </div>
+      <div id="pastEventsWrap" style="overflow:hidden;max-height:0;transition:max-height 0.5s cubic-bezier(0.4,0,0.2,1);opacity:0;transition:max-height 0.5s cubic-bezier(0.4,0,0.2,1),opacity 0.4s ease;">
+        <div class="events-grid" id="pastGrid"></div>
+        <div id="pastEmpty" class="empty-state" style="display:none;">
+          <div class="empty-icon">📂</div>
+          <div class="empty-text">No past events found</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end page-wrap -->
+</main>
+
+<!-- ═══════════ FOOTER ═══════════ -->
+<footer>
+  <p>© <span id="footerYear"></span> <span class="footer-brand">Sri Aurobindo College – BCA Department</span>. All rights reserved.</p>
+  <p style="margin-top:4px;font-size:0.75rem;">Campus Hub · Events Page</p>
+</footer>
+
+<!-- ═══════════ TOAST CONTAINER ═══════════ -->
+<div id="toast-container"></div>
+
+<!-- ═══════════ SCRIPTS ═══════════ -->
+<script>
+  /* ── Firebase Init ── */
+  const firebaseConfig = {
+    apiKey: "AIzaSyCX5g8sPw_iG0HMujrZM8dG7w510c6jpC4",
+    authDomain: "campus-hub-2220b.firebaseapp.com",
+    projectId: "campus-hub-2220b",
+    storageBucket: "campus-hub-2220b.firebasestorage.app",
+    messagingSenderId: "371742140259",
+    appId: "1:371742140259:web:55a2b29fd269689abb5556"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db   = firebase.firestore();
+
+  /* ── State ── */
+  let currentUser     = null;
+  let currentUserData = null;
+  let eventsUnsubscribe = null;
+  let formOpen        = false;
+  let pastVisible     = false;
+
+  /* ── Footer Year ── */
+  document.getElementById('footerYear').textContent = new Date().getFullYear();
+
+  /* ─────────────────── DARK MODE ─────────────────── */
+  const darkToggle = document.getElementById('darkToggle');
+  const savedTheme = localStorage.getItem('theme');
+  if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    document.documentElement.classList.add('dark');
+    darkToggle.textContent = '☀️';
+  } else {
+    darkToggle.textContent = '🌙';
+  }
+  darkToggle.addEventListener('click', () => {
+    const isDark = document.documentElement.classList.toggle('dark');
+    darkToggle.textContent = isDark ? '☀️' : '🌙';
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    // Update inline dark-text elements
+    updateDarkTextColors();
+  });
+
+  function updateDarkTextColors() {
+    const isDark = document.documentElement.classList.contains('dark');
+    document.querySelectorAll('.dark-text').forEach(el => {
+      el.style.color = isDark ? '#f9fafb' : '#111827';
+    });
+  }
+
+  /* ─────────────────── HAMBURGER ─────────────────── */
+  const hamburgerBtn = document.getElementById('hamburgerBtn');
+  const mobileMenu   = document.getElementById('mobileMenu');
+  hamburgerBtn.addEventListener('click', () => {
+    mobileMenu.classList.toggle('open');
+  });
+  document.addEventListener('click', (e) => {
+    if (!hamburgerBtn.contains(e.target) && !mobileMenu.contains(e.target)) {
+      mobileMenu.classList.remove('open');
+    }
+  });
+
+  /* ─────────────────── TOAST ─────────────────── */
+  function showToast(msg, type = 'success') {
+    const icons = { success: '✅', error: '❌', info: 'ℹ️' };
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `<span class="toast-icon">${icons[type] || 'ℹ️'}</span><span>${msg}</span>`;
+    container.appendChild(toast);
+    setTimeout(() => {
+      toast.classList.add('hide');
+      toast.addEventListener('animationend', () => toast.remove());
+    }, 3500);
+  }
+
+  /* ─────────────────── AUTH ─────────────────── */
+  auth.onAuthStateChanged(async (user) => {
+    if (!user) {
+      window.location.href = 'index.html';
+      return;
+    }
+    currentUser = user;
+    await loadUserData(user.uid);
+    setupNavbar();
+    subscribeEvents();
+  });
+
+  async function loadUserData(uid) {
+    try {
+      const snap = await db.collection('users').doc(uid).get();
+      if (snap.exists) {
+        currentUserData = snap.data();
+      } else {
+        currentUserData = { name: currentUser.displayName || 'User', role: 'student' };
+      }
+    } catch (e) {
+      console.error('loadUserData error:', e);
+      currentUserData = { name: 'User', role: 'student' };
+    }
+  }
+
+  function isPrivileged() {
+    if (!currentUserData) return false;
+    const r = (currentUserData.role || '').toLowerCase();
+    return r === 'admin' || r === 'lecturer';
+  }
+
+  function setupNavbar() {
+    const name   = currentUserData?.name || currentUser.displayName || 'User';
+    const initials = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
+
+    document.getElementById('navbarUser').style.display   = 'flex';
+    document.getElementById('logoutBtn').style.display    = 'inline-flex';
+    document.getElementById('navUserName').textContent    = name;
+    document.getElementById('mobileUserName').textContent = name;
+
+    const photo = currentUser.photoURL || currentUserData?.photoURL;
+
+    ['navAvatar','mobileAvatar'].forEach(id => {
+      const el = document.getElementById(id);
+      if (photo) {
+        el.innerHTML = `<img src="${photo}" alt="avatar" />`;
+      } else {
+        el.textContent = initials;
+      }
+    });
+
+    // Admin nav links
+    if ((currentUserData?.role || '').toLowerCase() === 'admin') {
+      document.getElementById('adminNavLink').style.display    = '';
+      document.getElementById('adminMobileLink').style.display = '';
+    }
+
+    // Create Event button
+    if (isPrivileged()) {
+      document.getElementById('toggleCreateBtn').style.display   = 'inline-flex';
+      document.getElementById('createEventCard').style.display   = 'block';
+    }
+
+    updateDarkTextColors();
+  }
+
+  function handleLogout() {
+    firebase.auth().signOut().then(() => { window.location.href = 'index.html'; });
+  }
+
+  /* ─────────────────── CREATE FORM TOGGLE ─────────────────── */
+  function toggleCreateForm() {
+    formOpen = !formOpen;
+    const panel   = document.getElementById('createFormPanel');
+    const chevron = document.getElementById('formChevron');
+    if (formOpen) {
+      panel.classList.add('open');
+      chevron.style.transform = 'rotate(180deg)';
+    } else {
+      panel.classList.remove('open');
+      chevron.style.transform = 'rotate(0deg)';
+    }
+  }
+
+  /* ─────────────────── CREATE EVENT ─────────────────── */
+  async function handleCreateEvent(e) {
+    e.preventDefault();
+    if (!currentUser || !isPrivileged()) return;
+
+    const title    = document.getElementById('evtTitle').value.trim();
+    const date     = document.getElementById('evtDate').value;
+    const location = document.getElementById('evtLocation').value.trim();
+    const desc     = document.getElementById('evtDesc').value.trim();
+
+    if (!title || !date) {
+      showToast('Title and Date are required.', 'error');
+      return;
+    }
+
+    const btn  = document.getElementById('submitEventBtn');
+    const span = document.getElementById('submitEventText');
+    btn.disabled = true;
+    span.textContent = 'Publishing…';
+
+    try {
+      await db.collection('events').add({
+        title,
+        date,
+        location: location || '',
+        description: desc || '',
+        createdBy: currentUser.uid,
+        createdByName: currentUserData?.name || 'Unknown',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      showToast('🎉 Event published successfully!', 'success');
+      document.getElementById('createEventForm').reset();
+      // Close form
+      formOpen = true;
+      toggleCreateForm();
+    } catch (err) {
+      console.error('Create event error:', err);
+      showToast('Failed to publish event. Try again.', 'error');
+    } finally {
+      btn.disabled = false;
+      span.textContent = '✨ Publish Event';
+    }
+  }
+
+  /* ─────────────────── DELETE EVENT ─────────────────── */
+  async function deleteEvent(docId, title) {
+    if (!confirm(`Delete event "${title}"?\nThis cannot be undone.`)) return;
+    try {
+      await db.collection('events').doc(docId).delete();
+      showToast('Event deleted.', 'info');
+    } catch (err) {
+      console.error('Delete error:', err);
+      showToast('Failed to delete event.', 'error');
+    }
+  }
+
+  /* ─────────────────── EVENTS SUBSCRIPTION ─────────────────── */
+  function subscribeEvents() {
+    if (eventsUnsubscribe) eventsUnsubscribe();
+
+    eventsUnsubscribe = db.collection('events')
+      .orderBy('date', 'desc')
+      .onSnapshot((snapshot) => {
+        const today = new Date().toISOString().slice(0,10);
+        const upcoming = [];
+        const past     = [];
+
+        snapshot.forEach(doc => {
+          const data = { id: doc.id, ...doc.data() };
+          if (data.date >= today) {
+            upcoming.push(data);
+          } else {
+            past.push(data);
+          }
+        });
+
+        // Sort upcoming ascending (soonest first)
+        upcoming.sort((a,b) => a.date.localeCompare(b.date));
+        // Past already descending from query
+
+        renderSection('upcoming', upcoming);
+        renderSection('past', past);
+        updateStats(upcoming.length, past.length);
+      }, (err) => {
+        console.error('Events snapshot error:', err);
+        showToast('Error loading events.', 'error');
+      });
+  }
+
+  /* ─────────────────── RENDER ─────────────────── */
+  function renderSection(type, events) {
+    const gridId   = type === 'upcoming' ? 'upcomingGrid'   : 'pastGrid';
+    const emptyId  = type === 'upcoming' ? 'upcomingEmpty'  : 'pastEmpty';
+    const loadId   = type === 'upcoming' ? 'upcomingLoading': null;
+    const countId  = type === 'upcoming' ? 'upcomingCount'  : 'pastCount';
+
+    if (loadId) document.getElementById(loadId).style.display = 'none';
+
+    const grid  = document.getElementById(gridId);
+    const empty = document.getElementById(emptyId);
+    const count = document.getElementById(countId);
+
+    count.textContent = events.length;
+
+    if (events.length === 0) {
+      grid.style.display  = 'none';
+      empty.style.display = 'block';
+    } else {
+      empty.style.display = 'none';
+      grid.style.display  = 'grid';
+      grid.innerHTML = events.map(ev => buildEventCard(ev, type)).join('');
+    }
+  }
+
+  function buildEventCard(ev, type) {
+    const isUpcoming = type === 'upcoming';
+    const dateObj    = ev.date ? new Date(ev.date + 'T00:00:00') : null;
+    const day        = dateObj ? dateObj.getDate() : '?';
+    const month      = dateObj ? dateObj.toLocaleString('default', { month: 'short' }).toUpperCase() : '';
+    const fullDate   = dateObj ? dateObj.toLocaleDateString('en-IN', { weekday:'long', year:'numeric', month:'long', day:'numeric' }) : ev.date || 'TBD';
+    const desc       = ev.description || '';
+    const truncDesc  = desc.length > 100 ? desc.slice(0,100) + '…' : desc;
+    const privileged = isPrivileged();
+
+    return `
+    <div class="event-card">
+      <div class="event-card-top ${isUpcoming ? 'upcoming' : 'past'}"></div>
+      <div style="padding:1.25rem;display:flex;flex-direction:column;flex:1;gap:0.75rem;">
+        <!-- Header -->
+        <div style="display:flex;align-items:flex-start;gap:12px;">
+          <div class="event-date-badge ${isUpcoming ? '' : 'past'}">
+            <span class="day">${day}</span>
+            <span class="month">${month}</span>
+          </div>
+          <div style="flex:1;min-width:0;">
+            <h3 style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:0.95rem;color:#111827;line-height:1.3;margin-bottom:2px;" class="dark-text">${escHtml(ev.title)}</h3>
+            <div style="font-size:0.72rem;color:#9ca3af;font-weight:500;">${fullDate}</div>
+          </div>
+        </div>
+
+        <!-- Location -->
+        ${ev.location ? `
+        <div style="display:flex;align-items:center;gap:6px;font-size:0.8rem;color:#6366f1;font-weight:600;">
+          <span>📍</span>
+          <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(ev.location)}</span>
+        </div>` : ''}
+
+        <!-- Description -->
+        ${truncDesc ? `
+        <p style="font-size:0.83rem;color:#6b7280;line-height:1.55;flex:1;">${escHtml(truncDesc)}</p>` : ''}
+
+        <!-- Footer -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:0.5rem;border-top:1px solid rgba(0,0,0,0.05);">
+          <div style="display:flex;align-items:center;gap:6px;font-size:0.72rem;color:#9ca3af;">
+            <span>👤</span>
+            <span style="font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100px;">${escHtml(ev.createdByName || 'Unknown')}</span>
+          </div>
+          ${privileged ? `
+          <button class="btn-danger" onclick="deleteEvent('${ev.id}', '${escHtml(ev.title).replace(/'/g,"\\'")}')">
+            <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            Delete
+          </button>` : `
+          <span style="font-size:0.7rem;font-weight:600;padding:3px 10px;border-radius:99px;${isUpcoming ? 'background:rgba(99,102,241,0.1);color:#6366f1;' : 'background:rgba(107,114,128,0.1);color:#9ca3af;'}">${isUpcoming ? 'Upcoming' : 'Past'}</span>
+          `}
+        </div>
+      </div>
+    </div>`;
+  }
+
+  function escHtml(str) {
+    return String(str || '')
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;')
+      .replace(/'/g,'&#39;');
+  }
+
+  /* ─────────────────── STATS ─────────────────── */
+  function updateStats(upcoming, past) {
+    document.getElementById('statTotal').textContent   = upcoming + past;
+    document.getElementById('statUpcoming').textContent = upcoming;
+    document.getElementById('statPast').textContent    = past;
+    updateDarkTextColors();
+  }
+
+  /* ─────────────────── PAST EVENTS TOGGLE ─────────────────── */
+  function togglePastEvents() {
+    pastVisible = !pastVisible;
+    const wrap    = document.getElementById('pastEventsWrap');
+    const chevron = document.getElementById('pastChevron');
+    const text    = document.getElementById('pastToggleText');
+
+    if (pastVisible) {
+      wrap.style.maxHeight = '9999px';
+      wrap.style.opacity   = '1';
+      chevron.style.transform = 'rotate(180deg)';
+      text.textContent = 'Hide';
+    } else {
+      wrap.style.maxHeight = '0';
+      wrap.style.opacity   = '0';
+      chevron.style.transform = 'rotate(0deg)';
+      text.textContent = 'Show';
+    }
+  }
+
+  /* ─────────────────── CLEANUP ─────────────────── */
+  window.addEventListener('beforeunload', () => {
+    if (eventsUnsubscribe) eventsUnsubscribe();
+  });
+</script>
+
+  <script src="js/site-nav.js"></script>
+</body>
+</html>
+
+

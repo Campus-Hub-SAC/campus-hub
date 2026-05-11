@@ -1,0 +1,116 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Profile - Sri Aurobindo College BCA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { darkMode: 'class' };</script>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .profile-page {
+      min-height: calc(100vh - 76px);
+      padding: 2.5rem 1rem;
+      display: grid;
+      place-items: center;
+    }
+
+    .profile-shell {
+      width: min(100%, 760px);
+      background: rgba(255,255,255,0.9);
+      border: 1px solid rgba(17,24,39,0.08);
+      border-radius: 16px;
+      box-shadow: 0 24px 70px rgba(15,23,42,0.12);
+      padding: clamp(1.25rem, 4vw, 2.25rem);
+    }
+
+    html.dark .profile-shell {
+      background: rgba(15,23,42,0.86);
+      border-color: rgba(255,255,255,0.1);
+      box-shadow: 0 24px 70px rgba(0,0,0,0.35);
+    }
+
+    .profile-kicker {
+      color: #7c3aed;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-size: 0.76rem;
+      margin-bottom: 0.55rem;
+    }
+
+    .profile-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: clamp(2rem, 5vw, 3.1rem);
+      line-height: 1;
+      font-weight: 800;
+      margin: 0;
+      color: #111827;
+    }
+
+    html.dark .profile-title { color: #f9fafb; }
+
+    .profile-copy {
+      margin-top: 1rem;
+      color: #4b5563;
+      line-height: 1.7;
+      font-size: 1rem;
+    }
+
+    html.dark .profile-copy { color: #cbd5e1; }
+
+    .profile-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 1.5rem;
+    }
+
+    .profile-action {
+      display: inline-flex;
+      min-height: 42px;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      padding: 0.7rem 1rem;
+      font-weight: 800;
+      text-decoration: none;
+      color: #fff;
+      background: linear-gradient(135deg, #ec4899, #8b5cf6 52%, #6366f1);
+      box-shadow: 0 12px 26px rgba(139,92,246,0.25);
+    }
+
+    .profile-action.secondary {
+      background: rgba(15,23,42,0.06);
+      color: #111827;
+      box-shadow: none;
+    }
+
+    html.dark .profile-action.secondary {
+      background: rgba(255,255,255,0.1);
+      color: #f9fafb;
+    }
+  </style>
+</head>
+<body>
+  <main class="profile-page">
+    <section class="profile-shell" aria-labelledby="profileTitle">
+      <div class="profile-kicker">Student Portal</div>
+      <h1 class="profile-title" id="profileTitle">Profile</h1>
+      <p class="profile-copy">
+        This page keeps the site navigation complete and gives users a consistent place to return to their account area. Connect your account details here when the profile backend is ready.
+      </p>
+      <div class="profile-actions">
+        <a class="profile-action" href="Home.html">Go to Dashboard</a>
+        <a class="profile-action secondary" href="students-hub.html">Students Hub</a>
+        <a class="profile-action secondary" href="parents.html">Parents View</a>
+      </div>
+    </section>
+  </main>
+  <script src="js/site-nav.js"></script>
+</body>
+</html>
+

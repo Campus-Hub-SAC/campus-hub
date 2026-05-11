@@ -1,0 +1,1511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Upload Resource – Sri Aurobindo College BCA</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+
+  <!-- Tailwind CSS CDN v4 -->
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <script>
+    // Tailwind dark mode config
+    if (typeof tailwind !== 'undefined') {
+      tailwind.config = { darkMode: 'class' };
+    }
+  </script>
+
+  <!-- Firebase Compat SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
+
+  <style>
+    /* ═══════════ RESET & FONTS ═══════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --pink:   #ec4899;
+      --indigo: #6366f1;
+      --violet: #8b5cf6;
+      --grad:   linear-gradient(135deg, #ec4899 0%, #8b5cf6 50%, #6366f1 100%);
+      --grad-h: linear-gradient(135deg, #db2777 0%, #7c3aed 50%, #4f46e5 100%);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      background-color: #f9fafb;
+      color: #111827;
+      transition: background-color 0.4s ease, color 0.4s ease;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+
+    html.dark body {
+      background-color: #000000;
+      color: #f9fafb;
+    }
+
+    /* ═══════════ NAVBAR ═══════════ */
+    .navbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 1000;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      padding: 0 1.25rem;
+      background: rgba(255,255,255,0.82);
+      backdrop-filter: blur(18px) saturate(1.6);
+      -webkit-backdrop-filter: blur(18px) saturate(1.6);
+      border-bottom: 1px solid rgba(0,0,0,0.07);
+      box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+      transition: background 0.4s ease, border-color 0.4s ease;
+    }
+    html.dark .navbar {
+      background: rgba(0,0,0,0.82);
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      box-shadow: 0 2px 16px rgba(0,0,0,0.4);
+    }
+    .navbar-inner {
+      width: 100%;
+      max-width: 1280px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+    .nav-logo-badge {
+      width: 38px; height: 38px;
+      border-radius: 10px;
+      background: var(--grad);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 800;
+      font-size: 0.85rem;
+      color: #fff;
+      letter-spacing: 0.5px;
+      box-shadow: 0 4px 12px rgba(139,92,246,0.35);
+      flex-shrink: 0;
+    }
+    .nav-logo-text {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.15;
+    }
+    .nav-logo-name {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: #111827;
+      white-space: nowrap;
+    }
+    html.dark .nav-logo-name { color: #f9fafb; }
+    .nav-logo-dept {
+      font-size: 0.62rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: var(--grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 0.15rem;
+      margin-left: 1.5rem;
+      flex: 1;
+    }
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 11px;
+      border-radius: 9px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #4b5563;
+      text-decoration: none;
+      transition: background 0.18s, color 0.18s;
+      white-space: nowrap;
+    }
+    .nav-link:hover {
+      background: rgba(139,92,246,0.1);
+      color: #7c3aed;
+    }
+    .nav-link.active {
+      background: rgba(139,92,246,0.12);
+      color: #7c3aed;
+    }
+    html.dark .nav-link { color: #9ca3af; }
+    html.dark .nav-link:hover, html.dark .nav-link.active {
+      background: rgba(139,92,246,0.18);
+      color: #a78bfa;
+    }
+    .nav-link-hub {
+      background: var(--grad);
+      color: #fff !important;
+      padding: 6px 13px;
+      border-radius: 9px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      box-shadow: 0 2px 10px rgba(139,92,246,0.3);
+      transition: box-shadow 0.2s, transform 0.15s;
+    }
+    .nav-link-hub:hover {
+      box-shadow: 0 4px 16px rgba(139,92,246,0.45);
+      transform: translateY(-1px);
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+
+    /* Dark mode toggle (inside navbar) */
+    .dark-toggle {
+      width: 38px; height: 38px;
+      border-radius: 10px;
+      border: 1.5px solid #e5e7eb;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      background: #ffffff;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+      transition: background 0.3s, border-color 0.3s, transform 0.2s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    .dark-toggle:hover { transform: scale(1.08); }
+    html.dark .dark-toggle {
+      background: #1f2937;
+      border-color: #374151;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.4);
+    }
+
+    /* User avatar chip */
+    .user-chip {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 4px 12px 4px 4px;
+      border-radius: 999px;
+      background: #f3f4f6;
+      border: 1.5px solid #e5e7eb;
+      cursor: default;
+      transition: background 0.2s;
+    }
+    html.dark .user-chip {
+      background: #1f2937;
+      border-color: #374151;
+    }
+    .user-avatar {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: var(--grad);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .user-chip-name {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #374151;
+      max-width: 90px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    html.dark .user-chip-name { color: #d1d5db; }
+    .user-chip-role {
+      font-size: 0.63rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      background: var(--grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Logout button */
+    .btn-logout {
+      height: 36px;
+      padding: 0 14px;
+      border-radius: 9px;
+      border: 1.5px solid #fecdd3;
+      background: #fff0f3;
+      color: #e11d48;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: background 0.2s, border-color 0.2s, transform 0.15s;
+      outline: none;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .btn-logout:hover {
+      background: #ffe4e6;
+      border-color: #fda4af;
+      transform: translateY(-1px);
+    }
+    html.dark .btn-logout {
+      background: rgba(225,29,72,0.12);
+      border-color: rgba(225,29,72,0.3);
+      color: #fb7185;
+    }
+    html.dark .btn-logout:hover {
+      background: rgba(225,29,72,0.2);
+      border-color: rgba(225,29,72,0.5);
+    }
+
+    /* Hamburger */
+    .hamburger {
+      display: none;
+      width: 38px; height: 38px;
+      border-radius: 10px;
+      border: 1.5px solid #e5e7eb;
+      background: #fff;
+      cursor: pointer;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      transition: background 0.2s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    .hamburger span {
+      display: block;
+      width: 18px; height: 2px;
+      background: #374151;
+      border-radius: 2px;
+      transition: transform 0.3s, opacity 0.3s;
+    }
+    html.dark .hamburger {
+      background: #1f2937;
+      border-color: #374151;
+    }
+    html.dark .hamburger span { background: #d1d5db; }
+    .hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .hamburger.open span:nth-child(2) { opacity: 0; }
+    .hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+    /* Mobile nav drawer */
+    .mobile-nav {
+      display: none;
+      position: fixed;
+      top: 64px; left: 0; right: 0;
+      z-index: 999;
+      background: rgba(255,255,255,0.97);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+      padding: 1rem 1.25rem 1.25rem;
+      flex-direction: column;
+      gap: 0.35rem;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+      animation: slideDown 0.22s ease;
+    }
+    html.dark .mobile-nav {
+      background: rgba(0,0,0,0.97);
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    .mobile-nav.open { display: flex; }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .mobile-nav .nav-link {
+      padding: 10px 14px;
+      font-size: 0.88rem;
+      border-radius: 10px;
+      width: 100%;
+    }
+    .mobile-nav-divider {
+      height: 1px;
+      background: #e5e7eb;
+      margin: 0.4rem 0;
+    }
+    html.dark .mobile-nav-divider { background: #1f2937; }
+    .mobile-nav-actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.4rem;
+    }
+
+    /* ═══════════ MAIN CONTENT ═══════════ */
+    .main-content {
+      padding-top: 64px;
+      min-height: 100vh;
+    }
+
+    .page-wrap {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 2.5rem 1rem 3rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Page heading */
+    .page-heading {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .page-heading h1 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.85rem;
+      font-weight: 800;
+      color: #111827;
+      line-height: 1.2;
+      margin-bottom: 0.4rem;
+    }
+    html.dark .page-heading h1 { color: #f9fafb; }
+    .page-heading p {
+      font-size: 0.9rem;
+      color: #6b7280;
+      font-weight: 500;
+    }
+    html.dark .page-heading p { color: #9ca3af; }
+
+    /* Cards */
+    .card {
+      background: #ffffff;
+      border-radius: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.04);
+      transition: background 0.4s ease, box-shadow 0.4s ease;
+      overflow: hidden;
+      width: 100%;
+    }
+    html.dark .card {
+      background: #111827;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.4), 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05);
+    }
+    .card-accent {
+      height: 4px;
+      background: var(--grad);
+      width: 100%;
+    }
+    .card-body {
+      padding: 2rem 2rem 2.25rem;
+    }
+
+    .card-heading {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #111827;
+      margin-bottom: 0.35rem;
+    }
+    html.dark .card-heading { color: #f9fafb; }
+    .card-subheading {
+      font-size: 0.83rem;
+      color: #6b7280;
+      font-weight: 500;
+      margin-bottom: 1.75rem;
+    }
+    html.dark .card-subheading { color: #9ca3af; }
+
+    /* Form fields */
+    .field { margin-bottom: 1.15rem; }
+    .field-label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #374151;
+      margin-bottom: 5px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    html.dark .field-label { color: #9ca3af; }
+
+    .input-wrap { position: relative; }
+    .input-icon {
+      position: absolute;
+      left: 13px; top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.95rem;
+      pointer-events: none;
+      opacity: 0.55;
+    }
+    .form-input, .form-select {
+      width: 100%;
+      height: 48px;
+      padding: 0 14px 0 40px;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 12px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: #111827;
+      background: #f9fafb;
+      outline: none;
+      transition: border-color 0.25s, background 0.25s, box-shadow 0.25s;
+    }
+    .form-input::placeholder { color: #9ca3af; font-weight: 400; }
+    .form-input:focus, .form-select:focus {
+      border-color: #8b5cf6;
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(139,92,246,0.12);
+    }
+    html.dark .form-input, html.dark .form-select {
+      background: #1f2937;
+      border-color: #374151;
+      color: #f9fafb;
+    }
+    html.dark .form-input::placeholder { color: #4b5563; }
+    html.dark .form-input:focus, html.dark .form-select:focus {
+      border-color: #8b5cf6;
+      background: #111827;
+      box-shadow: 0 0 0 3px rgba(139,92,246,0.18);
+    }
+    .form-select {
+      appearance: none;
+      -webkit-appearance: none;
+      cursor: pointer;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 2.5rem;
+    }
+    html.dark .form-select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239ca3af' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    }
+    html.dark .form-select option {
+      background: #1f2937;
+      color: #f9fafb;
+    }
+
+    /* File input custom */
+    .file-field { margin-bottom: 1.15rem; }
+    .file-upload-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+    .btn-file {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 0 18px;
+      height: 48px;
+      border-radius: 12px;
+      border: 1.5px solid #e5e7eb;
+      background: #ffffff;
+      color: #374151;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+      outline: none;
+      white-space: nowrap;
+      flex-shrink: 0;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    .btn-file:hover {
+      background: #f9fafb;
+      border-color: #8b5cf6;
+      color: #7c3aed;
+      box-shadow: 0 2px 10px rgba(139,92,246,0.12);
+      transform: translateY(-1px);
+    }
+    html.dark .btn-file {
+      background: #1f2937;
+      border-color: #374151;
+      color: #d1d5db;
+    }
+    html.dark .btn-file:hover {
+      background: #111827;
+      border-color: #8b5cf6;
+      color: #a78bfa;
+    }
+    .file-name-display {
+      font-size: 0.83rem;
+      font-weight: 500;
+      color: #6b7280;
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    html.dark .file-name-display { color: #9ca3af; }
+    .file-name-display.has-file {
+      color: #7c3aed;
+      font-weight: 600;
+    }
+    html.dark .file-name-display.has-file { color: #a78bfa; }
+    .file-accepted {
+      font-size: 0.72rem;
+      color: #9ca3af;
+      font-weight: 500;
+      margin-top: 5px;
+    }
+    html.dark .file-accepted { color: #6b7280; }
+
+    /* Progress bar */
+    .upload-progress {
+      display: none;
+      margin-top: 0.75rem;
+    }
+    .upload-progress.visible { display: block; }
+    .progress-bar-wrap {
+      height: 6px;
+      border-radius: 99px;
+      background: #e5e7eb;
+      overflow: hidden;
+    }
+    html.dark .progress-bar-wrap { background: #374151; }
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      background: var(--grad);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+    .progress-label {
+      font-size: 0.75rem;
+      color: #6b7280;
+      margin-top: 4px;
+      font-weight: 600;
+      display: flex;
+      justify-content: space-between;
+    }
+    html.dark .progress-label { color: #9ca3af; }
+
+    /* Buttons */
+    .btn-primary {
+      width: 100%;
+      height: 50px;
+      border: none;
+      border-radius: 12px;
+      background: var(--grad);
+      color: #fff;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(139,92,246,0.35);
+      transition: box-shadow 0.25s, transform 0.15s;
+      outline: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 0.5rem;
+    }
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--grad-h);
+      opacity: 0;
+      transition: opacity 0.25s;
+    }
+    .btn-primary:hover::before { opacity: 1; }
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(139,92,246,0.4);
+    }
+    .btn-primary:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 8px rgba(139,92,246,0.3);
+    }
+    .btn-primary:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .btn-primary .btn-text { position: relative; z-index: 1; }
+    .btn-primary .btn-spinner {
+      position: relative;
+      z-index: 1;
+      width: 18px; height: 18px;
+      border: 2.5px solid rgba(255,255,255,0.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+      flex-shrink: 0;
+    }
+    .btn-primary.loading .btn-spinner { display: block; }
+    .btn-primary.loading .btn-icon { display: none; }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Status messages */
+    .status-msg {
+      display: none;
+      padding: 1rem 1.1rem;
+      border-radius: 12px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      line-height: 1.5;
+      margin-top: 1rem;
+      animation: fadeUp 0.3s ease;
+    }
+    .status-msg.visible { display: flex; align-items: flex-start; gap: 10px; }
+    .status-msg.success {
+      background: #ecfdf5;
+      border: 1.5px solid #6ee7b7;
+      color: #065f46;
+    }
+    html.dark .status-msg.success {
+      background: rgba(16,185,129,0.1);
+      border-color: rgba(110,231,183,0.25);
+      color: #6ee7b7;
+    }
+    .status-msg.error {
+      background: #fff1f2;
+      border: 1.5px solid #fda4af;
+      color: #9f1239;
+    }
+    html.dark .status-msg.error {
+      background: rgba(225,29,72,0.1);
+      border-color: rgba(253,164,175,0.25);
+      color: #fb7185;
+    }
+    .status-icon { font-size: 1.1rem; flex-shrink: 0; }
+    .status-body { flex: 1; }
+    .status-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 0.5rem;
+      padding: 5px 12px;
+      border-radius: 8px;
+      background: rgba(139,92,246,0.1);
+      color: #7c3aed;
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: background 0.2s;
+      border: 1.5px solid rgba(139,92,246,0.2);
+    }
+    .status-link:hover {
+      background: rgba(139,92,246,0.18);
+    }
+    html.dark .status-link {
+      background: rgba(139,92,246,0.15);
+      color: #a78bfa;
+      border-color: rgba(139,92,246,0.3);
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Divider */
+    .form-divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #e5e7eb, transparent);
+      margin: 1.25rem 0;
+    }
+    html.dark .form-divider {
+      background: linear-gradient(90deg, transparent, #374151, transparent);
+    }
+
+    /* Role badge in form */
+    .role-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      background: rgba(139,92,246,0.1);
+      color: #7c3aed;
+      border: 1.5px solid rgba(139,92,246,0.2);
+    }
+    html.dark .role-badge {
+      background: rgba(139,92,246,0.15);
+      color: #a78bfa;
+      border-color: rgba(139,92,246,0.3);
+    }
+
+    /* Info banner */
+    .info-banner {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0.8rem 1rem;
+      border-radius: 12px;
+      background: rgba(99,102,241,0.07);
+      border: 1.5px solid rgba(99,102,241,0.18);
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: #4338ca;
+      margin-bottom: 1.5rem;
+    }
+    html.dark .info-banner {
+      background: rgba(99,102,241,0.12);
+      border-color: rgba(99,102,241,0.25);
+      color: #a5b4fc;
+    }
+
+    /* ═══════════ FOOTER ═══════════ */
+    footer {
+      margin-top: auto;
+      padding: 2rem 1.25rem 1.5rem;
+      text-align: center;
+      border-top: 1px solid #f3f4f6;
+      background: rgba(255,255,255,0.5);
+    }
+    html.dark footer {
+      border-top: 1px solid #111827;
+      background: rgba(0,0,0,0.3);
+    }
+    .footer-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.65rem;
+    }
+    .footer-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .footer-badge {
+      width: 30px; height: 30px;
+      border-radius: 8px;
+      background: var(--grad);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 800;
+      font-size: 0.72rem;
+      color: #fff;
+    }
+    .footer-name {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: #374151;
+    }
+    html.dark .footer-name { color: #d1d5db; }
+    .footer-tagline {
+      font-size: 0.78rem;
+      color: #9ca3af;
+      font-weight: 500;
+    }
+    .footer-links {
+      display: flex;
+      gap: 1.25rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .footer-link {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #6b7280;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .footer-link:hover { color: #7c3aed; }
+    html.dark .footer-link { color: #9ca3af; }
+    html.dark .footer-link:hover { color: #a78bfa; }
+    .footer-copy {
+      font-size: 0.72rem;
+      color: #9ca3af;
+      font-weight: 400;
+    }
+
+    /* Utilities */
+    .text-gradient {
+      background: var(--grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .flex-center { display: flex; align-items: center; justify-content: center; }
+
+    /* ═══════════ RESPONSIVE ═══════════ */
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .hamburger { display: flex; }
+      .nav-actions .user-chip { display: none; }
+      .nav-actions .btn-logout { display: none; }
+      .card-body { padding: 1.5rem 1.25rem 1.75rem; }
+      .page-wrap { padding: 2rem 0.75rem 2.5rem; }
+    }
+    @media (max-width: 480px) {
+      .page-heading h1 { font-size: 1.45rem; }
+      .card-heading { font-size: 1.1rem; }
+    }
+  </style>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- ═══════════ NAVBAR ═══════════ -->
+  <nav class="navbar">
+    <div class="navbar-inner">
+      <!-- Logo -->
+      <a href="index.html" class="nav-logo">
+        <div class="nav-logo-badge">SAC</div>
+        <div class="nav-logo-text">
+          <span class="nav-logo-name">Sri Aurobindo College</span>
+          <span class="nav-logo-dept">BCA Department</span>
+        </div>
+      </a>
+
+      <!-- Desktop Nav Links -->
+      <div class="nav-links" id="desktopNav">
+        <a href="index.html" class="nav-link">🏠 Home</a>
+        <a href="upload.html" class="nav-link active">📤 Upload</a>
+        <a href="resources.html" class="nav-link">📚 Resources</a>
+        <a href="events.html" class="nav-link">📅 Events</a>
+        <a href="gallery.html" class="nav-link">🖼️ Gallery</a>
+        <a href="notifications.html" class="nav-link">🔔 Notifications</a>
+        <a href="about.html" class="nav-link">ℹ️ About</a>
+        <a href="#" class="nav-link-hub" id="hubLink" style="display:none;">⚡ Hub</a>
+      </div>
+
+      <!-- Actions -->
+      <div class="nav-actions">
+        <!-- Dark Mode Toggle -->
+        <button class="dark-toggle" id="darkToggle" aria-label="Toggle dark mode">🌙</button>
+
+        <!-- User Chip -->
+        <div class="user-chip" id="userChip" style="display:none;">
+          <div class="user-avatar" id="userAvatar">?</div>
+          <div>
+            <div class="user-chip-name" id="userChipName">Loading…</div>
+            <div class="user-chip-role" id="userChipRole"></div>
+          </div>
+        </div>
+
+        <!-- Logout -->
+        <button class="btn-logout" id="logoutBtn" style="display:none;" onclick="handleLogout()">Logout</button>
+
+        <!-- Hamburger -->
+        <button class="hamburger" id="hamburger" aria-label="Menu" onclick="toggleMobileNav()">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Mobile Nav Drawer -->
+  <div class="mobile-nav" id="mobileNav">
+    <a href="index.html" class="nav-link">🏠 Home</a>
+    <a href="upload.html" class="nav-link active">📤 Upload</a>
+    <a href="resources.html" class="nav-link">📚 Resources</a>
+    <a href="events.html" class="nav-link">📅 Events</a>
+    <a href="gallery.html" class="nav-link">🖼️ Gallery</a>
+    <a href="notifications.html" class="nav-link">🔔 Notifications</a>
+    <a href="about.html" class="nav-link">ℹ️ About</a>
+    <a href="#" class="nav-link nav-link-hub" id="mobileHubLink" style="display:none;">⚡ Hub</a>
+    <div class="mobile-nav-divider"></div>
+    <div class="mobile-nav-actions">
+      <div class="user-chip" id="mobileUserChip" style="display:none; flex:1;">
+        <div class="user-avatar" id="mobileUserAvatar">?</div>
+        <div>
+          <div class="user-chip-name" id="mobileUserChipName">Loading…</div>
+          <div class="user-chip-role" id="mobileUserChipRole"></div>
+        </div>
+      </div>
+      <button class="btn-logout" id="mobileLogoutBtn" style="display:none;" onclick="handleLogout()">
+        🚪 Logout
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══════════ MAIN CONTENT ═══════════ -->
+  <main class="main-content">
+    <div class="page-wrap">
+
+      <!-- Page Heading -->
+      <div class="page-heading">
+        <h1>Upload <span class="text-gradient">Study Material</span></h1>
+        <p>Share notes, textbooks, and resources with your fellow students</p>
+      </div>
+
+      <!-- Upload Card -->
+      <div class="card">
+        <div class="card-accent"></div>
+        <div class="card-body">
+
+          <!-- Card Header -->
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.25rem; flex-wrap:wrap; gap:0.5rem;">
+            <h2 class="card-heading">📤 Upload Study Material</h2>
+            <span class="role-badge" id="roleBadge" style="display:none;">👤 Student</span>
+          </div>
+          <p class="card-subheading">Fill in the details and choose a file to upload</p>
+
+          <!-- Info Banner -->
+          <div class="info-banner" id="approvalBanner">
+            ℹ️ <span id="approvalBannerText">Your upload will be reviewed before it appears in Resources.</span>
+          </div>
+
+          <!-- Upload Form -->
+          <form id="uploadForm" novalidate>
+
+            <!-- Title -->
+            <div class="field">
+              <label class="field-label" for="titleInput">📝 Title</label>
+              <div class="input-wrap">
+                <span class="input-icon">📝</span>
+                <input
+                  class="form-input"
+                  type="text"
+                  id="titleInput"
+                  name="title"
+                  placeholder="e.g., Java Programming Notes"
+                  required
+                  autocomplete="off"
+                />
+              </div>
+            </div>
+
+            <!-- Subject -->
+            <div class="field">
+              <label class="field-label" for="subjectSelect">📖 Subject</label>
+              <div class="input-wrap">
+                <span class="input-icon">📖</span>
+                <select class="form-select" id="subjectSelect" name="subject" required>
+                  <option value="" disabled selected>Select a subject…</option>
+                  <option value="Programming">Programming</option>
+                  <option value="Mathematics">Mathematics</option>
+                  <option value="Web Development">Web Development</option>
+                  <option value="Database">Database</option>
+                  <option value="Computer Networks">Computer Networks</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Type -->
+            <div class="field">
+              <label class="field-label" for="typeSelect">🗂️ Type</label>
+              <div class="input-wrap">
+                <span class="input-icon">🗂️</span>
+                <select class="form-select" id="typeSelect" name="type" required>
+                  <option value="" disabled selected>Select a type…</option>
+                  <option value="Notes">Notes</option>
+                  <option value="Textbook">Textbook</option>
+                  <option value="Exam Paper">Exam Paper</option>
+                  <option value="Assignment">Assignment</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-divider"></div>
+
+            <!-- File Input -->
+            <div class="file-field">
+              <label class="field-label">📎 File</label>
+              <div class="file-upload-wrap">
+                <input
+                  type="file"
+                  id="fileInput"
+                  name="file"
+                  accept=".pdf,.doc,.docx,.ppt,.pptx,.jpg,.png"
+                  style="display:none;"
+                  required
+                />
+                <button type="button" class="btn-file" onclick="document.getElementById('fileInput').click()">
+                  📂 Choose File
+                </button>
+                <span class="file-name-display" id="fileNameDisplay">No file chosen</span>
+              </div>
+              <div class="file-accepted">Accepted: PDF, DOC, DOCX, PPT, PPTX, JPG, PNG · Max size: 25 MB</div>
+            </div>
+
+            <!-- Upload Progress -->
+            <div class="upload-progress" id="uploadProgress">
+              <div class="progress-bar-wrap">
+                <div class="progress-bar-fill" id="progressBarFill"></div>
+              </div>
+              <div class="progress-label">
+                <span id="progressText">Uploading…</span>
+                <span id="progressPercent">0%</span>
+              </div>
+            </div>
+
+            <!-- Hidden role field -->
+            <input type="hidden" id="roleInput" name="role" value="Student"/>
+
+            <!-- Status Message -->
+            <div class="status-msg" id="statusMsg">
+              <span class="status-icon" id="statusIcon">✅</span>
+              <div class="status-body">
+                <span id="statusText"></span>
+                <div id="statusLink" style="display:none; margin-top:0.5rem;">
+                  <a href="resources.html" class="status-link">📚 View in Resources →</a>
+                </div>
+              </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn-primary" id="submitBtn">
+              <span class="btn-icon">🚀</span>
+              <span class="btn-text">Upload Resource</span>
+              <div class="btn-spinner"></div>
+            </button>
+
+          </form>
+        </div>
+      </div>
+
+      <!-- Tips Card -->
+      <div class="card" style="margin-top: 1.25rem;">
+        <div class="card-body" style="padding: 1.25rem 1.5rem;">
+          <h3 style="font-family:'Plus Jakarta Sans',sans-serif; font-size:0.95rem; font-weight:800; color:#111827; margin-bottom:0.75rem;">
+            💡 Upload Tips
+          </h3>
+          <ul style="list-style:none; display:flex; flex-direction:column; gap:0.5rem;">
+            <li style="display:flex; align-items:flex-start; gap:8px; font-size:0.82rem; color:#6b7280; font-weight:500;">
+              <span>✅</span> Use a clear, descriptive title so others can find it easily
+            </li>
+            <li style="display:flex; align-items:flex-start; gap:8px; font-size:0.82rem; color:#6b7280; font-weight:500;">
+              <span>✅</span> Choose the correct subject and type for better filtering
+            </li>
+            <li style="display:flex; align-items:flex-start; gap:8px; font-size:0.82rem; color:#6b7280; font-weight:500;">
+              <span>✅</span> PDF format is preferred for documents
+            </li>
+            <li style="display:flex; align-items:flex-start; gap:8px; font-size:0.82rem; color:#6b7280; font-weight:500;">
+              <span>✅</span> Lecturer and Admin uploads are auto-approved
+            </li>
+          </ul>
+        </div>
+      </div>
+
+    </div><!-- /page-wrap -->
+  </main>
+
+  <!-- ═══════════ FOOTER ═══════════ -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-logo">
+        <div class="footer-badge">SAC</div>
+        <span class="footer-name">Sri Aurobindo College</span>
+      </div>
+      <p class="footer-tagline">BCA Department · Campus Hub</p>
+      <div class="footer-links">
+        <a href="index.html" class="footer-link">Home</a>
+        <a href="resources.html" class="footer-link">Resources</a>
+        <a href="events.html" class="footer-link">Events</a>
+        <a href="gallery.html" class="footer-link">Gallery</a>
+        <a href="about.html" class="footer-link">About</a>
+      </div>
+      <p class="footer-copy">© 2025 Sri Aurobindo College, BCA Department. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- ═══════════ FIREBASE & LOGIC ═══════════ -->
+  <script>
+    // ─── Firebase Config ───────────────────────────────────────────────
+    const firebaseConfig = {
+      apiKey: "AIzaSyCX5g8sPw_iG0HMujrZM8dG7w510c6jpC4",
+      authDomain: "campus-hub-2220b.firebaseapp.com",
+      projectId: "campus-hub-2220b",
+      storageBucket: "campus-hub-2220b.firebasestorage.app",
+      messagingSenderId: "371742140259",
+      appId: "1:371742140259:web:55a2b29fd269689abb5556"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth    = firebase.auth();
+    const db      = firebase.firestore();
+    const storage = firebase.storage();
+
+    // ─── Global State ──────────────────────────────────────────────────
+    let currentUser     = null;
+    let currentUserData = null;
+
+    // ─── DOM References ────────────────────────────────────────────────
+    const uploadForm       = document.getElementById('uploadForm');
+    const titleInput       = document.getElementById('titleInput');
+    const subjectSelect    = document.getElementById('subjectSelect');
+    const typeSelect       = document.getElementById('typeSelect');
+    const fileInput        = document.getElementById('fileInput');
+    const fileNameDisplay  = document.getElementById('fileNameDisplay');
+    const roleInput        = document.getElementById('roleInput');
+    const submitBtn        = document.getElementById('submitBtn');
+    const statusMsg        = document.getElementById('statusMsg');
+    const statusIcon       = document.getElementById('statusIcon');
+    const statusText       = document.getElementById('statusText');
+    const statusLink       = document.getElementById('statusLink');
+    const uploadProgress   = document.getElementById('uploadProgress');
+    const progressBarFill  = document.getElementById('progressBarFill');
+    const progressText     = document.getElementById('progressText');
+    const progressPercent  = document.getElementById('progressPercent');
+    const roleBadge        = document.getElementById('roleBadge');
+    const approvalBanner   = document.getElementById('approvalBanner');
+    const approvalBannerText = document.getElementById('approvalBannerText');
+
+    // ─── Auth State ────────────────────────────────────────────────────
+    auth.onAuthStateChanged(async (user) => {
+      if (!user) {
+        // Not logged in → redirect to login
+        window.location.href = 'index.html';
+        return;
+      }
+
+      currentUser = user;
+
+      // Fetch user data from Firestore
+      try {
+        const userDoc = await db.collection('users').doc(user.uid).get();
+        if (userDoc.exists) {
+          currentUserData = userDoc.data();
+        } else {
+          currentUserData = {
+            name: user.displayName || user.email || 'User',
+            role: 'Student'
+          };
+        }
+      } catch (err) {
+        currentUserData = {
+          name: user.displayName || user.email || 'User',
+          role: 'Student'
+        };
+      }
+
+      populateUI();
+    });
+
+    // ─── Populate UI with user data ────────────────────────────────────
+    function populateUI() {
+      const name = currentUserData?.name || currentUser?.displayName || currentUser?.email || 'User';
+      const role = currentUserData?.role || 'Student';
+      const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+
+      // Desktop chip
+      document.getElementById('userAvatar').textContent       = initials;
+      document.getElementById('userChipName').textContent     = name;
+      document.getElementById('userChipRole').textContent     = role;
+      document.getElementById('userChip').style.display       = 'flex';
+      document.getElementById('logoutBtn').style.display      = 'inline-flex';
+
+      // Mobile chip
+      document.getElementById('mobileUserAvatar').textContent    = initials;
+      document.getElementById('mobileUserChipName').textContent  = name;
+      document.getElementById('mobileUserChipRole').textContent  = role;
+      document.getElementById('mobileUserChip').style.display    = 'flex';
+      document.getElementById('mobileLogoutBtn').style.display   = 'flex';
+
+      // Role-based hub link
+      if (role?.toLowerCase() === 'admin') {
+        document.getElementById('hubLink').style.display       = 'flex';
+        document.getElementById('hubLink').href                = 'admin.html';
+        document.getElementById('hubLink').textContent         = '⚡ Admin Hub';
+        document.getElementById('mobileHubLink').style.display = 'flex';
+        document.getElementById('mobileHubLink').href          = 'admin.html';
+        document.getElementById('mobileHubLink').textContent   = '⚡ Admin Hub';
+      } else if (role?.toLowerCase() === 'lecturer') {
+        document.getElementById('hubLink').style.display       = 'flex';
+        document.getElementById('hubLink').href                = 'lecturer.html';
+        document.getElementById('hubLink').textContent         = '⚡ Lecturer Hub';
+        document.getElementById('mobileHubLink').style.display = 'flex';
+        document.getElementById('mobileHubLink').href          = 'lecturer.html';
+        document.getElementById('mobileHubLink').textContent   = '⚡ Lecturer Hub';
+      }
+
+      // Role badge in form
+      roleBadge.textContent = '👤 ' + role;
+      roleBadge.style.display = 'inline-flex';
+
+      // Hidden role input
+      roleInput.value = role;
+
+      // Approval banner
+      const autoApproved = (role?.toLowerCase() === 'lecturer' || role?.toLowerCase() === 'admin');
+      if (autoApproved) {
+        approvalBannerText.textContent = '✅ Your upload will be automatically approved and visible in Resources immediately.';
+        approvalBanner.style.background   = 'rgba(16,185,129,0.07)';
+        approvalBanner.style.borderColor  = 'rgba(110,231,183,0.35)';
+        approvalBanner.style.color        = '#065f46';
+        if (document.documentElement.classList.contains('dark')) {
+          approvalBanner.style.color = '#6ee7b7';
+        }
+      } else {
+        approvalBannerText.textContent = 'ℹ️ Student uploads will be reviewed by a lecturer or admin before appearing in Resources.';
+      }
+    }
+
+    // ─── File input display ────────────────────────────────────────────
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files.length > 0) {
+        const f = fileInput.files[0];
+        fileNameDisplay.textContent = f.name;
+        fileNameDisplay.classList.add('has-file');
+      } else {
+        fileNameDisplay.textContent = 'No file chosen';
+        fileNameDisplay.classList.remove('has-file');
+      }
+    });
+
+    // ─── Show Status ───────────────────────────────────────────────────
+    function showStatus(type, message, showLink = false) {
+      statusMsg.className = 'status-msg visible ' + type;
+      statusIcon.textContent  = type === 'success' ? '✅' : '❌';
+      statusText.textContent  = message;
+      statusLink.style.display = showLink ? 'block' : 'none';
+      statusMsg.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function hideStatus() {
+      statusMsg.className = 'status-msg';
+    }
+
+    // ─── Set Loading State ─────────────────────────────────────────────
+    function setLoading(isLoading) {
+      submitBtn.disabled = isLoading;
+      submitBtn.classList.toggle('loading', isLoading);
+    }
+
+    // ─── Show Progress ─────────────────────────────────────────────────
+    function showProgress(percent) {
+      uploadProgress.classList.add('visible');
+      progressBarFill.style.width = percent + '%';
+      progressPercent.textContent = Math.round(percent) + '%';
+      if (percent >= 100) {
+        progressText.textContent = 'Processing…';
+      } else {
+        progressText.textContent = 'Uploading…';
+      }
+    }
+
+    function hideProgress() {
+      uploadProgress.classList.remove('visible');
+      progressBarFill.style.width = '0%';
+    }
+
+    // ─── Form Submit ───────────────────────────────────────────────────
+    uploadForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideStatus();
+
+      // Validate
+      const title   = titleInput.value.trim();
+      const subject = subjectSelect.value;
+      const type    = typeSelect.value;
+      const file    = fileInput.files[0];
+      const role    = roleInput.value;
+
+      if (!title)   { showStatus('error', '⚠️ Please enter a title for the resource.'); return; }
+      if (!subject) { showStatus('error', '⚠️ Please select a subject.'); return; }
+      if (!type)    { showStatus('error', '⚠️ Please select a resource type.'); return; }
+      if (!file)    { showStatus('error', '⚠️ Please choose a file to upload.'); return; }
+
+      // File size check (25 MB)
+      if (file.size > 25 * 1024 * 1024) {
+        showStatus('error', '⚠️ File size exceeds 25 MB. Please choose a smaller file.');
+        return;
+      }
+
+      if (!currentUser) {
+        window.location.href = 'index.html';
+        return;
+      }
+
+      setLoading(true);
+      showProgress(0);
+
+      try {
+        // Storage path
+        const timestamp  = Date.now();
+        const safeFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+        const storagePath  = `resources/${timestamp}_${safeFileName}`;
+        const storageRef   = storage.ref(storagePath);
+
+        // Upload with progress tracking
+        const uploadTask = storageRef.put(file);
+
+        uploadTask.on('state_changed',
+          (snapshot) => {
+            const pct = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            showProgress(pct);
+          },
+          (error) => {
+            console.error('Upload error:', error);
+            setLoading(false);
+            hideProgress();
+            let errMsg = '❌ Upload failed. Please try again.';
+            if (error.code === 'storage/unauthorized') {
+              errMsg = '❌ Permission denied. Please check your account permissions.';
+            } else if (error.code === 'storage/canceled') {
+              errMsg = '❌ Upload was cancelled.';
+            } else if (error.code === 'storage/quota-exceeded') {
+              errMsg = '❌ Storage quota exceeded. Please contact an admin.';
+            }
+            showStatus('error', errMsg);
+          },
+          async () => {
+            // Upload complete
+            try {
+              const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+              const autoApproved = (role?.toLowerCase() === 'lecturer' || role?.toLowerCase() === 'admin');
+              const uploaderName = currentUserData?.name || currentUser?.displayName || currentUser?.email || 'Unknown';
+
+              // Firestore document
+              await db.collection('resources').add({
+                title:           title,
+                subject:         subject,
+                type:            type,
+                fileUrl:         downloadURL,
+                fileName:        file.name,
+                uploadedBy:      currentUser.uid,
+                uploadedByName:  uploaderName,
+                approved:        autoApproved,
+                role:            role,
+                storagePath:     storagePath,
+                createdAt:       firebase.firestore.FieldValue.serverTimestamp()
+              });
+
+              showProgress(100);
+              setTimeout(() => {
+                hideProgress();
+                setLoading(false);
+
+                const approvalMsg = autoApproved
+                  ? '🎉 Resource uploaded and published successfully!'
+                  : '🎉 Resource uploaded successfully! It will appear in Resources after review.';
+
+                showStatus('success', approvalMsg, true);
+
+                // Reset form
+                uploadForm.reset();
+                fileNameDisplay.textContent = 'No file chosen';
+                fileNameDisplay.classList.remove('has-file');
+              }, 600);
+
+            } catch (firestoreErr) {
+              console.error('Firestore error:', firestoreErr);
+              setLoading(false);
+              hideProgress();
+              showStatus('error', '❌ File uploaded but failed to save details. Please contact an admin.');
+            }
+          }
+        );
+
+      } catch (err) {
+        console.error('Unexpected error:', err);
+        setLoading(false);
+        hideProgress();
+        showStatus('error', '❌ An unexpected error occurred. Please try again.');
+      }
+    });
+
+    // ─── Logout ────────────────────────────────────────────────────────
+    function handleLogout() {
+      auth.signOut().then(() => {
+        window.location.href = 'index.html';
+      }).catch(err => {
+        console.error('Logout error:', err);
+      });
+    }
+
+    // ─── Dark Mode Toggle ──────────────────────────────────────────────
+    const html      = document.documentElement;
+    const darkToggle = document.getElementById('darkToggle');
+
+    function applyDark(on) {
+      if (on) {
+        html.classList.add('dark');
+        darkToggle.textContent = '☀️';
+        localStorage.setItem('theme', 'dark');
+      } else {
+        html.classList.remove('dark');
+        darkToggle.textContent = '🌙';
+        localStorage.setItem('theme', 'light');
+      }
+    }
+
+    // Load saved theme
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      applyDark(true);
+    } else {
+      applyDark(false);
+    }
+
+    darkToggle.addEventListener('click', () => {
+      applyDark(!html.classList.contains('dark'));
+    });
+
+    // ─── Mobile Nav ────────────────────────────────────────────────────
+    function toggleMobileNav() {
+      const nav   = document.getElementById('mobileNav');
+      const burger = document.getElementById('hamburger');
+      const isOpen = nav.classList.contains('open');
+      nav.classList.toggle('open', !isOpen);
+      burger.classList.toggle('open', !isOpen);
+    }
+
+    // Close mobile nav on outside click
+    document.addEventListener('click', (e) => {
+      const nav    = document.getElementById('mobileNav');
+      const burger = document.getElementById('hamburger');
+      if (nav.classList.contains('open') &&
+          !nav.contains(e.target) &&
+          !burger.contains(e.target)) {
+        nav.classList.remove('open');
+        burger.classList.remove('open');
+      }
+    });
+  </script>
+
+  <script src="js/site-nav.js"></script>
+</body>
+</html>
+
